@@ -14,6 +14,6 @@ import org.junit.Test;
 
 public class WSWebWithoutContainerIT extends AbstractSeedIT {
     @Test
-    public void web_services_dont_prevent_startup_ouside_web_environment() {
+    public void web_services_dont_prevent_startup_outside_web_environment() {
     }
 }
