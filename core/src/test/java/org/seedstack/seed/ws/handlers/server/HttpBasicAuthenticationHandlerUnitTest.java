@@ -64,7 +64,7 @@ public class HttpBasicAuthenticationHandlerUnitTest {
         assertThat(result).isTrue();
     }
 
-    @Test(expected = org.seedstack.seed.security.api.exceptions.AuthenticationException.class)
+    @Test(expected = org.seedstack.seed.security.AuthenticationException.class)
     public void handleMessage_in_inBound() {
         SOAPMessageContext messageContext = mock(SOAPMessageContext.class);
         when(messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).thenReturn(false);
@@ -72,7 +72,7 @@ public class HttpBasicAuthenticationHandlerUnitTest {
         fail("should fail");
     }
 
-    @Test(expected = org.seedstack.seed.security.api.exceptions.AuthenticationException.class)
+    @Test(expected = org.seedstack.seed.security.AuthenticationException.class)
     public void handleMessage_in_inBound_with_null_http_headers() {
         SOAPMessageContext messageContext = mock(SOAPMessageContext.class);
         when(messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).thenReturn(false);
@@ -81,7 +81,7 @@ public class HttpBasicAuthenticationHandlerUnitTest {
         assertThat(result).isTrue();
     }
 
-    @Test(expected = org.seedstack.seed.security.api.exceptions.AuthenticationException.class)
+    @Test(expected = org.seedstack.seed.security.AuthenticationException.class)
     public void handleMessage_in_inBound_without_basic_auth_header() {
         SOAPMessageContext messageContext = mock(SOAPMessageContext.class);
         when(messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).thenReturn(false);

@@ -8,7 +8,7 @@
 package org.seedstack.seed.ws.fixtures;
 
 import org.seedstack.wsdl.seed.calculator.CalculatorWS;
-import org.seedstack.seed.security.api.annotations.RequiresRoles;
+import org.seedstack.seed.security.RequiresRoles;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;

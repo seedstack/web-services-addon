@@ -8,7 +8,7 @@
 package org.seedstack.seed.ws.fixtures;
 
 
-import org.seedstack.seed.it.api.ITBind;
+import org.seedstack.seed.it.ITBind;
 
 
 @ITBind

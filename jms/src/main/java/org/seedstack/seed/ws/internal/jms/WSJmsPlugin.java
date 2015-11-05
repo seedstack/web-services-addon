@@ -18,30 +18,21 @@ import io.nuun.kernel.api.plugin.context.InitContext;
 import io.nuun.kernel.core.AbstractPlugin;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
-import org.seedstack.seed.core.api.SeedException;
+import org.seedstack.jms.internal.JmsPlugin;
+import org.seedstack.jms.spi.ConnectionDefinition;
+import org.seedstack.jms.spi.JmsFactory;
+import org.seedstack.jms.spi.MessageListenerInstanceDefinition;
+import org.seedstack.jms.spi.MessagePoller;
+import org.seedstack.seed.SeedException;
 import org.seedstack.seed.core.internal.application.ApplicationPlugin;
-import org.seedstack.seed.jms.internal.JmsPlugin;
-import org.seedstack.seed.jms.spi.ConnectionDefinition;
-import org.seedstack.seed.jms.spi.JmsFactory;
-import org.seedstack.seed.jms.spi.MessageListenerInstanceDefinition;
-import org.seedstack.seed.jms.spi.MessagePoller;
 import org.seedstack.seed.ws.internal.EndpointDefinition;
 import org.seedstack.seed.ws.internal.WSPlugin;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Session;
+import javax.jms.*;
 import javax.naming.NamingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**

@@ -10,7 +10,7 @@ package org.seedstack.seed.ws.internal.jms;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.assistedinject.Assisted;
 import com.sun.xml.ws.api.message.Packet;
-import org.seedstack.seed.core.api.Application;
+import org.seedstack.seed.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

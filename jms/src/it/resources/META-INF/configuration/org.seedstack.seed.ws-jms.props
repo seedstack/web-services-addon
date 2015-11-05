@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-[org.seedstack.seed.jms]
+[org.seedstack.jms]
 connection-factories = myConnectionFactory
 connection-factory.myConnectionFactory.vendor.class = org.apache.activemq.ActiveMQConnectionFactory
 connection-factory.myConnectionFactory.vendor.property.brokerURL = vm://localhost?broker.persistent=false

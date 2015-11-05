@@ -8,15 +8,14 @@
 package org.seedstack.seed;
 
 
-import org.seedstack.seed.core.api.Configuration;
-import org.seedstack.seed.it.AbstractSeedIT;
-import org.seedstack.wsdl.seed.calculator.CalculatorService;
-import org.seedstack.wsdl.seed.calculator.CalculatorWS;
-import org.seedstack.wsdl.seed.calculator.ImaginaryNumber;
 import com.sun.xml.ws.client.ClientTransportException;
 import com.sun.xml.ws.fault.ServerSOAPFaultException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.seedstack.seed.it.AbstractSeedIT;
+import org.seedstack.wsdl.seed.calculator.CalculatorService;
+import org.seedstack.wsdl.seed.calculator.CalculatorWS;
+import org.seedstack.wsdl.seed.calculator.ImaginaryNumber;
 
 import javax.xml.ws.BindingProvider;
 

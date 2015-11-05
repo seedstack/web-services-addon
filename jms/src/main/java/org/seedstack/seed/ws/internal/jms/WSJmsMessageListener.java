@@ -8,7 +8,7 @@
 package org.seedstack.seed.ws.internal.jms;
 
 import com.google.inject.MembersInjector;
-import org.seedstack.seed.core.api.SeedException;
+import org.seedstack.seed.SeedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -11,7 +11,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
-import org.seedstack.seed.security.api.exceptions.AuthenticationException;
+import org.seedstack.seed.security.AuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

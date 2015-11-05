@@ -7,7 +7,7 @@
  */
 package org.seedstack.seed.ws.adapters;
 
-import org.seedstack.seed.core.api.Configuration;
+import org.seedstack.seed.Configuration;
 import org.seedstack.seed.ws.internal.WSPlugin;
 import com.sun.xml.wss.RealmAuthenticationAdapter;
 import com.sun.xml.wss.XWSSecurityException;

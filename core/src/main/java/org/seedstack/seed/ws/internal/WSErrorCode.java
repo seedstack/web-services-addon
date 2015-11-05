@@ -7,7 +7,7 @@
  */
 package org.seedstack.seed.ws.internal;
 
-import org.seedstack.seed.core.api.ErrorCode;
+import org.seedstack.seed.ErrorCode;
 
 enum WSErrorCode implements ErrorCode {
     ENDPOINT_URL_MISSING,
