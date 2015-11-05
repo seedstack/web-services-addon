@@ -11,19 +11,13 @@ menu:
 ---
 
 SeedStack Web-Services add-on provides a JAX-WS integration. JAX-WS offers facilities to create and connect to web services.
-To enable Web-Services standalone add-on (without a Web environment) use the following dependency snippet in your module:
+To enable Web-Services standalone add-on (without a Web environment) use the following dependency snippet in your module.
 
-    <dependency>
-        <groupId>org.seedstack.addons</groupId>
-        <artifactId>web-services-core</artifactId>
-    </dependency>
+{{< dependency g="org.seedstack.addons.ws" a="web-services-core" >}}
 
 In a Web environment you must use the following dependency snippet instead:
 
-        <dependency>
-            <groupId>org.seedstack.addons</groupId>
-            <artifactId>web-services-web</artifactId>
-        </dependency>
+{{< dependency g="org.seedstack.addons.ws" a="web-services-ws" >}}
 
 # Best practices
 

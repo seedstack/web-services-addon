@@ -11,7 +11,7 @@ menu:
 
 The WSDL file must be placed in the `META-INF/ws` directory of the classpath. 
 
-```
+```ini
 src
     |-it
         |-java
@@ -36,7 +36,7 @@ WS-import is a tool which generates JAX-WS artifact from WSDL such as:
 
 You have to use the `jaxws-maven-plugin`. The following code is a sample of WS-import configuration.
 
-```
+```xml
 <build>
     <plugins>
         <plugin>
