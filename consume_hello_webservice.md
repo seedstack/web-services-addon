@@ -12,7 +12,7 @@ and use `wsimport` to generate web service client java from `wsdl`.
 
 You can then use the `wsimport` generated class in your application code:
 
-```
+```java
 HelloService helloService = new HelloService();
 Hello helloServicePort = helloService.getHelloServicePort();
 ((BindingProvider) helloServicePort).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/hello");

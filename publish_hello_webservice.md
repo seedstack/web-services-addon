@@ -11,7 +11,7 @@ The goal of this page is to detail the creation of an Hello World soap based Web
 
 # WSDL
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions
         xmlns="http://schemas.xmlsoap.org/wsdl/"
@@ -70,7 +70,7 @@ Configure the `jaxws-maven-plugin` and use the `wsimport` goal to generate web s
 
 Then create a class which implement the generated interface by ws-import.
 
-```
+```java
 @WebService(
     endpointInterface = "org.myorganization.myproject.wsdl.seed.hello.HelloService",
     targetNamespace = "http://myproject.myorganization.org/wsdl/seed/hello/",
@@ -88,10 +88,13 @@ public class HelloServiceTest implements HelloService {
 
 To configure your endpoint, just add the following properties to your configuration:
 
-    [org.seedstack.seed.ws]
-    endpoints = HelloService
-    endpoint.HelloService.implementation = fully.qualified.package.name.HelloServiceTest
-    endpoint.HelloService.wsdl = Hello.wsdl
-    endpoint.HelloService.url = /ws/hello
+```ini
+[org.seedstack.ws]
+endpoints = HelloService
+
+endpoint.HelloService.implementation = fully.qualified.package.name.HelloServiceTest
+endpoint.HelloService.wsdl = Hello.wsdl
+endpoint.HelloService.url = /ws/hello
+```
 
 Note that the WSDL location is relative to `META-INF/ws`.
