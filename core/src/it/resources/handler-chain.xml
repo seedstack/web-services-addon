@@ -12,7 +12,7 @@
     <handler-chain>
         <handler>
             <handler-name>basicAuth</handler-name>
-            <handler-class>org.seedstack.seed.ws.handlers.server.HttpBasicAuthenticationHandler</handler-class>
+            <handler-class>org.seedstack.ws.HttpBasicAuthenticationHandler</handler-class>
         </handler>
     </handler-chain>
 </handler-chains>
