@@ -11,7 +11,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-import io.nuun.kernel.api.Plugin;
+import com.google.common.collect.Lists;
 import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.PluginException;
 import io.nuun.kernel.api.plugin.context.InitContext;
@@ -24,7 +24,7 @@ import org.seedstack.jms.spi.JmsFactory;
 import org.seedstack.jms.spi.MessageListenerInstanceDefinition;
 import org.seedstack.jms.spi.MessagePoller;
 import org.seedstack.seed.SeedException;
-import org.seedstack.seed.core.internal.application.ApplicationPlugin;
+import org.seedstack.seed.core.spi.configuration.ConfigurationProvider;
 import org.seedstack.ws.internal.EndpointDefinition;
 import org.seedstack.ws.internal.WSPlugin;
 
@@ -62,25 +62,10 @@ public class WSJmsPlugin extends AbstractPlugin {
 
     @Override
     public InitState init(InitContext initContext) {
-        Configuration wsConfiguration = null;
-
-        for (Plugin plugin : initContext.pluginsRequired()) {
-            if (plugin instanceof JmsPlugin) {
-                jmsPlugin = (JmsPlugin) plugin;
-            }
-
-            if (plugin instanceof WSPlugin) {
-                wsPlugin = (WSPlugin) plugin;
-            }
-
-            if (plugin instanceof ApplicationPlugin) {
-                wsConfiguration = ((ApplicationPlugin) plugin).getApplication().getConfiguration().subset(WSPlugin.CONFIGURATION_PREFIX);
-            }
-        }
-
-        if (wsConfiguration == null) {
-            throw new PluginException("Missing required application plugin");
-        }
+        jmsPlugin = initContext.dependency(JmsPlugin.class);
+        wsPlugin = initContext.dependency(WSPlugin.class);
+        Configuration wsConfiguration = initContext.dependency(ConfigurationProvider.class)
+                .getConfiguration().subset(WSPlugin.CONFIGURATION_PREFIX);
 
         int cacheSize = wsConfiguration.getInt("jms.transport-cache.max-size", DEFAULT_CACHE_SIZE);
         final Configuration finalWsConfiguration = wsConfiguration;
@@ -217,13 +202,8 @@ public class WSJmsPlugin extends AbstractPlugin {
     }
 
     @Override
-    public Collection<Class<? extends Plugin>> requiredPlugins() {
-        Collection<Class<? extends Plugin>> plugins = new ArrayList<Class<? extends Plugin>>();
-        plugins.add(WSPlugin.class);
-        plugins.add(ApplicationPlugin.class);
-        plugins.add(JmsPlugin.class);
-
-        return plugins;
+    public Collection<Class<?>> requiredPlugins() {
+        return Lists.<Class<?>>newArrayList(WSPlugin.class, ConfigurationProvider.class, JmsPlugin.class);
     }
 
     @Override
