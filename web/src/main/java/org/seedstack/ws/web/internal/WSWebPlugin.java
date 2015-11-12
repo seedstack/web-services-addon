@@ -8,29 +8,25 @@
 package org.seedstack.ws.web.internal;
 
 import com.google.common.collect.ImmutableList;
-import org.seedstack.ws.internal.EndpointDefinition;
-import org.seedstack.ws.internal.WSPlugin;
+import com.google.common.collect.Lists;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
 import com.sun.xml.ws.transport.http.servlet.WSServlet;
 import com.sun.xml.ws.transport.http.servlet.WSServletDelegate;
-import io.nuun.kernel.api.Plugin;
 import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.PluginException;
 import io.nuun.kernel.api.plugin.context.Context;
 import io.nuun.kernel.api.plugin.context.InitContext;
 import io.nuun.kernel.core.AbstractPlugin;
 import org.seedstack.seed.web.internal.WebPlugin;
+import org.seedstack.ws.internal.EndpointDefinition;
+import org.seedstack.ws.internal.WSPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.xml.ws.soap.SOAPBinding;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This plugin enables Web integration of JAX-WS, disabling the standalone WS plugin in the process.
@@ -56,17 +52,8 @@ public class WSWebPlugin extends AbstractPlugin {
 
     @Override
     public InitState init(InitContext initContext) {
-        for (Plugin plugin : initContext.dependentPlugins()) {
-            if (plugin instanceof WebPlugin) {
-                webPlugin = ((WebPlugin) plugin);
-            }
-        }
-
-        for (Plugin plugin : initContext.pluginsRequired()) {
-            if (plugin instanceof WSPlugin) {
-                wsPlugin = ((WSPlugin) plugin);
-            }
-        }
+        webPlugin = initContext.dependency(WebPlugin.class);
+        wsPlugin = initContext.dependency(WSPlugin.class);
 
         // Always disable standalone publishing (it will not work with the servlet specific configuration anyway)
         wsPlugin.disableEndpointPublishing();
@@ -137,16 +124,12 @@ public class WSWebPlugin extends AbstractPlugin {
     }
 
     @Override
-    public Collection<Class<? extends Plugin>> requiredPlugins() {
-        Collection<Class<? extends Plugin>> plugins = new ArrayList<Class<? extends Plugin>>();
-        plugins.add(WSPlugin.class);
-        return plugins;
+    public Collection<Class<?>> requiredPlugins() {
+        return Lists.<Class<?>>newArrayList(WSPlugin.class);
     }
 
     @Override
-    public Collection<Class<? extends Plugin>> dependentPlugins() {
-        Collection<Class<? extends Plugin>> plugins = new ArrayList<Class<? extends Plugin>>();
-        plugins.add(WebPlugin.class);
-        return plugins;
+    public Collection<Class<?>> dependentPlugins() {
+        return Lists.<Class<?>>newArrayList(WebPlugin.class);
     }
 }

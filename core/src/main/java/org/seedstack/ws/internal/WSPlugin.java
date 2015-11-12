@@ -8,6 +8,7 @@
 package org.seedstack.ws.internal;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.oracle.webservices.api.databinding.DatabindingModeFeature;
 import com.oracle.webservices.api.databinding.ExternalMetadataFeature;
 import com.sun.xml.ws.api.BindingID;
@@ -25,7 +26,6 @@ import com.sun.xml.ws.transport.http.server.HttpEndpoint;
 import com.sun.xml.ws.transport.http.server.ServerAdapterList;
 import com.sun.xml.ws.util.xml.XmlUtil;
 import com.sun.xml.wss.RealmAuthenticationAdapter;
-import io.nuun.kernel.api.Plugin;
 import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.context.Context;
 import io.nuun.kernel.api.plugin.context.InitContext;
@@ -35,7 +35,7 @@ import io.nuun.kernel.core.AbstractPlugin;
 import org.apache.commons.configuration.Configuration;
 import org.kametic.specifications.Specification;
 import org.seedstack.seed.SeedException;
-import org.seedstack.seed.core.internal.application.ApplicationPlugin;
+import org.seedstack.seed.core.spi.configuration.ConfigurationProvider;
 import org.seedstack.seed.core.utils.SeedReflectionUtils;
 import org.seedstack.seed.core.utils.SeedSpecifications;
 import org.seedstack.ws.NoSecurityRealmAuthenticationAdapter;
@@ -104,11 +104,8 @@ public class WSPlugin extends AbstractPlugin {
     @Override
     @SuppressWarnings("unchecked")
     public InitState init(InitContext initContext) {
-        for (Plugin plugin : initContext.pluginsRequired()) {
-            if (plugin instanceof ApplicationPlugin) {
-                wsConfiguration = ((ApplicationPlugin) plugin).getApplication().getConfiguration().subset(WSPlugin.CONFIGURATION_PREFIX);
-            }
-        }
+        wsConfiguration = initContext.dependency(ConfigurationProvider.class)
+                .getConfiguration().subset(WSPlugin.CONFIGURATION_PREFIX);
 
         if (wsConfiguration == null) {
             throw SeedException.createNew(WSErrorCode.NO_WS_CONFIGURATION);
@@ -204,10 +201,8 @@ public class WSPlugin extends AbstractPlugin {
     }
 
     @Override
-    public Collection<Class<? extends Plugin>> requiredPlugins() {
-        Collection<Class<? extends Plugin>> plugins = new ArrayList<Class<? extends Plugin>>();
-        plugins.add(ApplicationPlugin.class);
-        return plugins;
+    public Collection<Class<?>> requiredPlugins() {
+        return Lists.<Class<?>>newArrayList(ConfigurationProvider.class);
     }
 
     @Override
