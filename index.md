@@ -4,7 +4,8 @@ addon: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
 author: "SeedStack"
 description: "Provides JAX-WS support through Metro."
-min-version: "15.7+"
+min-version: "15.11+"
+backend: true
 menu:
     AddonWebServices:
         weight: 10
