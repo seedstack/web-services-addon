@@ -75,6 +75,14 @@ public class WSJmsIT {
     }
 
     @Test
+    public void one_way_operation_with_fault() {
+        CalculatorService calculatorService = new CalculatorService();
+        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapJmsPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "jms:jndi:dynamicQueues/TEST.QUEUE?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory&jndiConnectionFactoryName=ConnectionFactory&jndiURL=vm://localhost?broker.persistent=false");
+        calculatorWS.clearWithFailure();
+    }
+
+    @Test
     public void persistent_delivery_mode() {
         CalculatorService calculatorService = new CalculatorService();
         CalculatorWS calculatorWS = calculatorService.getCalculatorSoapJmsPort();

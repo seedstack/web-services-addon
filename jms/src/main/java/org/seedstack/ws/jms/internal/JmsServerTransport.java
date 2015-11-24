@@ -168,6 +168,10 @@ class JmsServerTransport implements WebServiceContextDelegate {
         return requestContentType;
     }
 
+    boolean canReply() {
+        return replyTo != null;
+    }
+
     void setResponseContentType(String value) {
         this.responseContentType = value;
     }
