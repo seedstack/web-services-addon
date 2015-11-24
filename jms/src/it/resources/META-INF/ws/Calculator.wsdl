@@ -53,6 +53,9 @@
         <wsdl:operation name="Clear">
             <wsdl:input message="tns:Clear"/>
         </wsdl:operation>
+        <wsdl:operation name="ClearWithFailure">
+            <wsdl:input message="tns:Clear"/>
+        </wsdl:operation>
     </wsdl:portType>
 
 
@@ -85,6 +88,14 @@
             </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="Clear">
+            <soap:operation soapAction=""/>
+            <wsdl:input name="Clear">
+                <soap:body
+                        namespace="http://seedstack.org/wsdl/seed/calculator/"
+                        use="literal"/>
+            </wsdl:input>
+        </wsdl:operation>
+        <wsdl:operation name="ClearWithFailure">
             <soap:operation soapAction=""/>
             <wsdl:input name="Clear">
                 <soap:body

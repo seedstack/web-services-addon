@@ -43,4 +43,9 @@ public class CalculatorServiceImpl implements CalculatorWS {
     public void clear() {
         System.out.println("Calculator clear");
     }
+
+    @Override
+    public void clearWithFailure() {
+        throw new IllegalStateException("failure");
+    }
 }
