@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-2015, The SeedStack authors <http://seedstack.org>
+ * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,14 +7,17 @@
  */
 package org.seedstack.ws.web.internal;
 
-import org.seedstack.seed.core.utils.SeedReflectionUtils;
 import com.sun.xml.ws.api.ResourceLoader;
 import com.sun.xml.ws.api.server.BoundEndpoint;
 import com.sun.xml.ws.api.server.Container;
 import com.sun.xml.ws.transport.http.servlet.ServletModule;
+import org.seedstack.seed.core.utils.SeedReflectionUtils;
 
 import javax.servlet.ServletContext;
 import javax.xml.ws.WebServiceException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,7 +53,18 @@ class SeedServletContainer extends Container {
     };
 
     SeedServletContainer(ServletContext servletContext) {
-        this.servletContext = servletContext;
+        if ("org.apache.catalina.core.StandardContext$NoPluggabilityServletContext".equals(servletContext.getClass().getName())) {
+            // This proxy is used for avoiding a reflection bug of Metro when used with Tomcat without web.xml.
+            // See: https://java.net/jira/browse/JAX_WS-1175
+
+            this.servletContext = (ServletContext) Proxy.newProxyInstance(
+                    SeedReflectionUtils.findMostCompleteClassLoader(SeedServletContainer.class),
+                    new Class[]{ServletContext.class},
+                    new ServletContextProxy(servletContext)
+            );
+        } else {
+            this.servletContext = servletContext;
+        }
     }
 
     @Override
@@ -78,5 +92,18 @@ class SeedServletContainer extends Container {
                 (WSIT_SERVER_AUTH_CONTEXT_CLASS_NAME.equals(stackTrace.getClassName()) || SECURITY_SERVER_TUBE_CLASS_NAME.equals(stackTrace.getClassName())) &&
                 GET_REALM_AUTHENTICATION_ADAPTER_METHOD_NAME.equals(stackTrace.getMethodName());
 
+    }
+
+    private static class ServletContextProxy implements InvocationHandler {
+        private final ServletContext servletContext;
+
+        private ServletContextProxy(ServletContext servletContext) {
+            this.servletContext = servletContext;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            return method.invoke(servletContext, args);
+        }
     }
 }
