@@ -14,6 +14,8 @@ import org.seedstack.seed.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.inject.Inject;
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -24,6 +26,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.xml.ws.WebServiceException;
 import java.net.URI;
 import java.util.Map;
@@ -33,7 +36,9 @@ import java.util.concurrent.ExecutionException;
 class JmsClientTransport {
     private static final Logger LOGGER = LoggerFactory.getLogger(JmsClientTransport.class);
 
-    private static final int DEFAULT_TIMEOUT_INTERVAL = 30000;
+    public static final int DEFAULT_TIMEOUT_INTERVAL = 30000;
+    public static final String MESSAGE_TYPE_BYTES = "bytes";
+    public static final String MESSAGE_TYPE_TEXT = "text";
 
     private final int responseTimeout;
     private final LoadingCache<SoapJmsUri, Connection> connectionCache;
@@ -97,7 +102,15 @@ class JmsClientTransport {
                     }
                 }
 
-                BytesMessage message = session.createBytesMessage();
+                Message message;
+                String messageType = destinationAddress.getParameter("messageType");
+                if (messageType == null || MESSAGE_TYPE_BYTES.equalsIgnoreCase(messageType)) {
+                    message = session.createBytesMessage();
+                } else if (MESSAGE_TYPE_TEXT.equalsIgnoreCase(messageType)) {
+                    message = session.createTextMessage();
+                } else {
+                    throw new JmsTransportException(String.format("Unknown message type %s, specify '%s' or '%s'", messageType, MESSAGE_TYPE_BYTES, MESSAGE_TYPE_TEXT));
+                }
 
                 for (Map.Entry<String, String> entry : requestHeaders.entrySet()) {
                     message.setStringProperty(entry.getKey(), entry.getValue());
@@ -116,7 +129,12 @@ class JmsClientTransport {
                     messageConsumer = session.createConsumer(replyDestination, String.format("JMSCorrelationID='%s'", correlationId));
                 }
 
-                message.writeBytes(sndPacket);
+                if (message instanceof BytesMessage) {
+                    ((BytesMessage) message).writeBytes(sndPacket);
+                } else {
+                    // doesn't support binary attachments as it doesn't try to encode them
+                    ((TextMessage) message).setText(new String(sndPacket, findCharset(requestHeaders.get(JmsConstants.CONTENT_TYPE_PROPERTY))));
+                }
 
                 producer.send(message);
                 producer.close();
@@ -129,14 +147,17 @@ class JmsClientTransport {
                     replyMessage = messageConsumer.receive(responseTimeout);
 
                     if (replyMessage instanceof BytesMessage) {
-                        BytesMessage bmReplyMessage = (BytesMessage) replyMessage;
-                        byte[] buffer = new byte[(int) bmReplyMessage.getBodyLength()];
-                        bmReplyMessage.readBytes(buffer);
+                        BytesMessage bytesReplyMessage = (BytesMessage) replyMessage;
+                        byte[] buffer = new byte[(int) bytesReplyMessage.getBodyLength()];
+                        bytesReplyMessage.readBytes(buffer);
                         return buffer;
+                    } else if (replyMessage instanceof TextMessage) {
+                        // doesn't support encoded text messages (like base64)
+                        return ((TextMessage) replyMessage).getText().getBytes(findCharset(getResponseContentType()));
                     } else {
                         throw new JmsTransportException("No suitable reply received");
                     }
-                } catch (JMSException e) {
+                } catch (Exception e) {
                     throw new JmsTransportException("Error receiving JMS message", e);
                 }
             }
@@ -157,6 +178,16 @@ class JmsClientTransport {
         return null;
     }
 
+    private String findCharset(String contentType) {
+        String charset;
+        try {
+            charset = new MimeType(contentType).getParameter("charset");
+        } catch (MimeTypeParseException e) {
+            charset = "UTF-8";
+        }
+        return charset;
+    }
+
     String getResponseContentType() {
         if (replyMessage != null) {
             try {
@@ -168,6 +199,4 @@ class JmsClientTransport {
             throw new WebServiceException("No response available");
         }
     }
-
-
 }

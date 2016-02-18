@@ -13,6 +13,8 @@ import com.sun.xml.ws.api.message.Packet;
 import com.sun.xml.ws.api.server.WSEndpoint;
 import com.sun.xml.ws.api.server.WebServiceContextDelegate;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.inject.Inject;
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -28,7 +30,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,6 +45,7 @@ class JmsServerTransport implements WebServiceContextDelegate {
     private final String correlationID;
     private final String username;
     private final String password;
+    private final boolean replyAsText;
 
     private String responseContentType;
     private boolean mustReply;
@@ -58,7 +60,12 @@ class JmsServerTransport implements WebServiceContextDelegate {
         this.requestContentType = requestMessage.getStringProperty(JmsConstants.CONTENT_TYPE_PROPERTY);
         this.replyTo = requestMessage.getJMSReplyTo();
         this.correlationID = requestMessage.getJMSCorrelationID();
+        this.inputStream = readMessage(requestMessage);
+        this.replyAsText = requestMessage instanceof TextMessage;
+    }
 
+    // note that content-encoding is not supported
+    private ByteArrayInputStream readMessage(Message requestMessage) throws JMSException {
         if (requestMessage instanceof BytesMessage) {
             long bodyLength = ((BytesMessage) requestMessage).getBodyLength();
 
@@ -69,20 +76,26 @@ class JmsServerTransport implements WebServiceContextDelegate {
             byte[] rqstBuf = new byte[(int) bodyLength];
             ((BytesMessage) requestMessage).readBytes(rqstBuf);
 
-            this.inputStream = new ByteArrayInputStream(rqstBuf);
+            return new ByteArrayInputStream(rqstBuf);
         } else if (requestMessage instanceof TextMessage) {
             try {
-                String encoding = requestMessage.getStringProperty(JmsConstants.ENCODING_PROPERTY);
-                if (encoding == null || encoding.isEmpty()) {
-                    encoding = "UTF-8";
-                }
-                this.inputStream = new ByteArrayInputStream(((TextMessage) requestMessage).getText().getBytes(encoding));
-            } catch (UnsupportedEncodingException e) {
+                return new ByteArrayInputStream(((TextMessage) requestMessage).getText().getBytes(findCharset(requestContentType)));
+            } catch (Exception e) {
                 throw new IllegalStateException("Unable to decode JMS text message", e);
             }
         } else {
             throw new IllegalStateException("Unknown message type (only byte messages and text messages are supported)");
         }
+    }
+
+    private String findCharset(String contentType) {
+        String charset;
+        try {
+            charset = new MimeType(contentType).getParameter("charset");
+        } catch (MimeTypeParseException e) {
+            charset = "UTF-8";
+        }
+        return charset;
     }
 
     InputStream getInputStream() {
@@ -137,14 +150,24 @@ class JmsServerTransport implements WebServiceContextDelegate {
             }
 
             try {
-                BytesMessage replyMessage = jmsSession.createBytesMessage();
+                Message replyMessage;
+
+                if (!replyAsText) {
+                    replyMessage = jmsSession.createBytesMessage();
+                } else {
+                    replyMessage = jmsSession.createTextMessage();
+                }
 
                 replyMessage.setJMSCorrelationID(correlationID);
                 replyMessage.setStringProperty(JmsConstants.CONTENT_TYPE_PROPERTY, responseContentType);
 
                 byte[] content = ((ByteArrayOutputStream) getOutputStream()).toByteArray();
                 if (content.length > 0) {
-                    replyMessage.writeBytes(content);
+                    if (replyMessage instanceof BytesMessage) {
+                        ((BytesMessage) replyMessage).writeBytes(content);
+                    } else {
+                        ((TextMessage) replyMessage).setText(new String(content, findCharset(responseContentType)));
+                    }
                 }
 
                 MessageProducer messageProducer = jmsSession.createProducer(replyTo);
