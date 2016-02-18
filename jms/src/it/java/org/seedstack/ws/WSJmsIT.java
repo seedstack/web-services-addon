@@ -154,4 +154,12 @@ public class WSJmsIT {
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "jms:topic:TEST.TOPIC?connectionName=myConnection&topicReplyToName=TEST.REPLY.TOPIC");
         calculatorWS.add(1, 1);
     }
+
+    @Test
+    public void using_text_message() {
+        CalculatorService calculatorService = new CalculatorService();
+        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapJmsPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "jms:jndi:dynamicQueues/TEST.QUEUE?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory&jndiConnectionFactoryName=ConnectionFactory&jndiURL=vm://localhost?broker.persistent=false&deliveryMode=NON_PERSISTENT&messageType=text");
+        assertThat(calculatorWS.add(1, 1)).isEqualTo(2);
+    }
 }
