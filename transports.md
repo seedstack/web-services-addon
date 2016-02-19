@@ -60,3 +60,11 @@ This variant allows to directly specify a queue name using a connection factory 
     jms:topic:TOPIC.NAME?connectionFactoryName=nameOfConfiguredConnectionFactory
 
 The `topicReplyToName` can be omitted in which case the implementation will create a temporary queue for the response (not a temporary topic). 
+
+## Message type
+
+The Web-Services add-on uses binary JMS messages by default as [they have a number of advantages over text messages](https://www.w3.org/TR/soapjms/#textmessage-considerations). 
+In case you want to force the use of text messages, you can do so by specifying the `messageType` parameter in the URI, as in this example:
+
+    jms:queue:QUEUE.NAME?connectionFactoryName=nameOfConfiguredConnectionFactory&messageType=text
+    
