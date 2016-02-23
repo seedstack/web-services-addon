@@ -1,7 +1,14 @@
 ---
 title: "Consuming"
-addon: "Web-Services"
+name: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
+tags:
+    - "web-service"
+    - "jax-ws"
+    - "metro"
+    - "consume"
+zones:
+    - Addons
 menu:
     AddonWebServices:
         weight: 50

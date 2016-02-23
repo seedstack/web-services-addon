@@ -1,7 +1,15 @@
 ---
 title: "Maven tools"
-addon: "Web-Services"
+name: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
+tags:
+    - "web-service"
+    - "jax-ws"
+    - "metro"
+    - "maven"
+    - "wsimport"
+zones:
+    - Addons
 menu:
     AddonWebServices:
         weight: 20

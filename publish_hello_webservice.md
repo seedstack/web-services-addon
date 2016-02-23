@@ -1,7 +1,15 @@
 ---
 title: "Publishing"
-addon: "Web-Services"
+name: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
+tags:
+    - "web-service"
+    - "jax-ws"
+    - "metro"
+    - "example"
+    - "wsdl"
+zones:
+    - Addons
 menu:
     AddonWebServices:
         weight: 40

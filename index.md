@@ -1,11 +1,19 @@
 ---
-title: "Overview"
-addon: "Web-Services"
+title: "Basics"
+name: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
 author: "SeedStack"
 description: "Provides JAX-WS support through Metro."
 min-version: "15.11+"
 backend: true
+weight: -1
+tags:
+    - "web-service"
+    - "jax-ws"
+    - "metro"
+    - "endorse"
+zones:
+    - Addons
 menu:
     AddonWebServices:
         weight: 10

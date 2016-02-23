@@ -1,7 +1,14 @@
 ---
 title: "Testing"
-addon: "Web-Services"
+name: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
+zones:
+    - Addons
+tags:
+    - "web-service"
+    - "jax-ws"
+    - "metro"
+    - "testing"
 menu:
     AddonWebServices:
         weight: 60

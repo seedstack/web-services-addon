@@ -1,7 +1,16 @@
 ---
 title: "Transports"
-addon: "Web-Services"
+name: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
+tags:
+    - "web-service"
+    - "jax-ws"
+    - "metro"
+    - "transport"
+    - "jms"
+    - "http"
+zones:
+    - Addons
 menu:
     AddonWebServices:
         weight: 30
