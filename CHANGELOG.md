@@ -1,3 +1,7 @@
+# Version 2.2.1 (2016-03-09)
+
+* [fix] Fix NPE that occurs during JMS text message reception if the `SOAPJMS_contentType` message property is not set.
+
 # Version 2.2.0 (2016-03-09)
 
 * [new] Add support for sending and receiving JMS text messages (only bytes messages were supported).
