@@ -178,13 +178,17 @@ class JmsClientTransport {
         return null;
     }
 
-    private String findCharset(String contentType) {
-        String charset;
-        try {
+    private String findCharset(String contentType) throws MimeTypeParseException {
+        String charset = null;
+
+        if (contentType != null && !contentType.isEmpty()) {
             charset = new MimeType(contentType).getParameter("charset");
-        } catch (MimeTypeParseException e) {
+        }
+
+        if (charset == null || charset.isEmpty()) {
             charset = "UTF-8";
         }
+
         return charset;
     }
 

@@ -70,7 +70,7 @@ class JmsServerTransport implements WebServiceContextDelegate {
             long bodyLength = ((BytesMessage) requestMessage).getBodyLength();
 
             if (bodyLength > Integer.MAX_VALUE) {
-                throw new IllegalStateException("JMS message too long");
+                throw new JmsTransportException("JMS message too long");
             }
 
             byte[] rqstBuf = new byte[(int) bodyLength];
@@ -81,20 +81,24 @@ class JmsServerTransport implements WebServiceContextDelegate {
             try {
                 return new ByteArrayInputStream(((TextMessage) requestMessage).getText().getBytes(findCharset(requestContentType)));
             } catch (Exception e) {
-                throw new IllegalStateException("Unable to decode JMS text message", e);
+                throw new JmsTransportException("Unable to decode JMS text message", e);
             }
         } else {
             throw new IllegalStateException("Unknown message type (only byte messages and text messages are supported)");
         }
     }
 
-    private String findCharset(String contentType) {
-        String charset;
-        try {
+    private String findCharset(String contentType) throws MimeTypeParseException {
+        String charset = null;
+
+        if (contentType != null && !contentType.isEmpty()) {
             charset = new MimeType(contentType).getParameter("charset");
-        } catch (MimeTypeParseException e) {
+        }
+
+        if (charset == null || charset.isEmpty()) {
             charset = "UTF-8";
         }
+
         return charset;
     }
 
@@ -166,7 +170,11 @@ class JmsServerTransport implements WebServiceContextDelegate {
                     if (replyMessage instanceof BytesMessage) {
                         ((BytesMessage) replyMessage).writeBytes(content);
                     } else {
-                        ((TextMessage) replyMessage).setText(new String(content, findCharset(responseContentType)));
+                        try {
+                            ((TextMessage) replyMessage).setText(new String(content, findCharset(responseContentType)));
+                        } catch (Exception e) {
+                            throw new JmsTransportException("Unable to encode text message for reply to " + soapJmsUri, e);
+                        }
                     }
                 }
 
