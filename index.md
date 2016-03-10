@@ -26,7 +26,7 @@ To enable Web-Services standalone add-on (without a Web environment) use the fol
 
 In a Web environment you must use the following dependency snippet instead:
 
-{{< dependency g="org.seedstack.addons.ws" a="web-services-ws" >}}
+{{< dependency g="org.seedstack.addons.ws" a="web-services-web" >}}
 
 # Best practices
 
