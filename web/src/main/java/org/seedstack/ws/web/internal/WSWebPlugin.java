@@ -18,7 +18,7 @@ import io.nuun.kernel.api.plugin.PluginException;
 import io.nuun.kernel.api.plugin.context.Context;
 import io.nuun.kernel.api.plugin.context.InitContext;
 import io.nuun.kernel.core.AbstractPlugin;
-import org.seedstack.seed.web.internal.WebPlugin;
+import org.seedstack.seed.SeedRuntime;
 import org.seedstack.ws.internal.EndpointDefinition;
 import org.seedstack.ws.internal.WSPlugin;
 import org.slf4j.Logger;
@@ -26,7 +26,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.xml.ws.soap.SOAPBinding;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This plugin enables Web integration of JAX-WS, disabling the standalone WS plugin in the process.
@@ -40,10 +44,10 @@ public class WSWebPlugin extends AbstractPlugin {
     private final Map<String, EndpointDefinition> endpointDefinitions = new HashMap<String, EndpointDefinition>();
 
     private WSPlugin wsPlugin;
-    private WebPlugin webPlugin;
     private ServletContext servletContext;
     private ServletAdapterList servletAdapters;
     private WSServletDelegate wsServletDelegate;
+    private WSServletModule wsServletModule;
 
     @Override
     public String name() {
@@ -51,8 +55,17 @@ public class WSWebPlugin extends AbstractPlugin {
     }
 
     @Override
+    public Collection<Class<?>> requiredPlugins() {
+        return Lists.<Class<?>>newArrayList(WSPlugin.class);
+    }
+
+    @Override
+    public void provideContainerContext(Object containerContext) {
+        servletContext = ((SeedRuntime)containerContext).contextAs(ServletContext.class);
+    }
+
+    @Override
     public InitState init(InitContext initContext) {
-        webPlugin = initContext.dependency(WebPlugin.class);
         wsPlugin = initContext.dependency(WSPlugin.class);
 
         // Always disable standalone publishing (it will not work with the servlet specific configuration anyway)
@@ -76,10 +89,15 @@ public class WSWebPlugin extends AbstractPlugin {
                 endpointDefinitions.put(endpointName, endpointDefinition);
             }
 
-            webPlugin.registerAdditionalModule(new WSServletModule(endpointUrls));
+            wsServletModule = new WSServletModule(endpointUrls);
         }
 
         return InitState.INITIALIZED;
+    }
+
+    @Override
+    public Object nativeUnitModule() {
+        return wsServletModule;
     }
 
     @Override
@@ -114,22 +132,5 @@ public class WSWebPlugin extends AbstractPlugin {
                 servletAdapter.getEndpoint().dispose();
             }
         }
-    }
-
-    @Override
-    public void provideContainerContext(Object containerContext) {
-        if (containerContext != null && ServletContext.class.isAssignableFrom(containerContext.getClass())) {
-            this.servletContext = (ServletContext) containerContext;
-        }
-    }
-
-    @Override
-    public Collection<Class<?>> requiredPlugins() {
-        return Lists.<Class<?>>newArrayList(WSPlugin.class);
-    }
-
-    @Override
-    public Collection<Class<?>> dependentPlugins() {
-        return Lists.<Class<?>>newArrayList(WebPlugin.class);
     }
 }

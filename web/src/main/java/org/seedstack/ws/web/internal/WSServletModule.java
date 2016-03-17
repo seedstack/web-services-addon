@@ -7,13 +7,13 @@
  */
 package org.seedstack.ws.web.internal;
 
-
 import com.google.inject.Scopes;
 import com.google.inject.servlet.ServletModule;
 import com.sun.xml.ws.transport.http.servlet.WSServlet;
 
 import java.util.List;
 
+@WSConcern
 class WSServletModule extends ServletModule {
     private final List<String> endpointUrls;
 

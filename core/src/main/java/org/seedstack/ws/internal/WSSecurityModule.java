@@ -9,15 +9,7 @@ package org.seedstack.ws.internal;
 
 import com.google.inject.name.Names;
 import org.apache.shiro.guice.ShiroModule;
-import org.seedstack.seed.security.spi.SecurityConcern;
 
-
-/**
- * Guice module to initialize a Shiro environment for WS entry point.
- *
- * @author yves.dautremay@mpsa.com
- */
-@SecurityConcern
 class WSSecurityModule extends ShiroModule {
     private static final String WS_SECURITY_MANAGER_NAME = "wsSecurityManager";
 
