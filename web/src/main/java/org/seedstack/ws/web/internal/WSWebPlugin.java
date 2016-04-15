@@ -19,6 +19,10 @@ import io.nuun.kernel.api.plugin.context.Context;
 import io.nuun.kernel.api.plugin.context.InitContext;
 import io.nuun.kernel.core.AbstractPlugin;
 import org.seedstack.seed.SeedRuntime;
+import org.seedstack.seed.web.spi.FilterDefinition;
+import org.seedstack.seed.web.spi.ListenerDefinition;
+import org.seedstack.seed.web.spi.ServletDefinition;
+import org.seedstack.seed.web.spi.WebProvider;
 import org.seedstack.ws.internal.EndpointDefinition;
 import org.seedstack.ws.internal.WSPlugin;
 import org.slf4j.Logger;
@@ -37,17 +41,17 @@ import java.util.Map;
  *
  * @author emmanuel.vinel@mpsa.com
  */
-public class WSWebPlugin extends AbstractPlugin {
-    public static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAPBinding.SOAP11HTTP_BINDING, SOAPBinding.SOAP12HTTP_BINDING, SOAPBinding.SOAP11HTTP_MTOM_BINDING, SOAPBinding.SOAP12HTTP_MTOM_BINDING);
+public class WSWebPlugin extends AbstractPlugin implements WebProvider {
+    private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAPBinding.SOAP11HTTP_BINDING, SOAPBinding.SOAP12HTTP_BINDING, SOAPBinding.SOAP11HTTP_MTOM_BINDING, SOAPBinding.SOAP12HTTP_MTOM_BINDING);
     private static final Logger LOGGER = LoggerFactory.getLogger(WSWebPlugin.class);
 
     private final Map<String, EndpointDefinition> endpointDefinitions = new HashMap<String, EndpointDefinition>();
-
+    private final List<String> endpointUrls = new ArrayList<String>();
     private WSPlugin wsPlugin;
     private ServletContext servletContext;
     private ServletAdapterList servletAdapters;
     private WSServletDelegate wsServletDelegate;
-    private WSServletModule wsServletModule;
+    private WSWebModule wsWebModule;
 
     @Override
     public String name() {
@@ -61,7 +65,7 @@ public class WSWebPlugin extends AbstractPlugin {
 
     @Override
     public void provideContainerContext(Object containerContext) {
-        servletContext = ((SeedRuntime)containerContext).contextAs(ServletContext.class);
+        servletContext = ((SeedRuntime) containerContext).contextAs(ServletContext.class);
     }
 
     @Override
@@ -71,10 +75,7 @@ public class WSWebPlugin extends AbstractPlugin {
         // Always disable standalone publishing (it will not work with the servlet specific configuration anyway)
         wsPlugin.disableEndpointPublishing();
 
-        if (servletContext == null) {
-            LOGGER.info("No servlet context detected, web services servlet integration disabled");
-        } else {
-            List<String> endpointUrls = new ArrayList<String>();
+        if (servletContext != null) {
             for (Map.Entry<String, EndpointDefinition> wsEndpointEntry : wsPlugin.getEndpointDefinitions(SUPPORTED_BINDINGS).entrySet()) {
                 String endpointName = wsEndpointEntry.getKey();
                 EndpointDefinition endpointDefinition = wsEndpointEntry.getValue();
@@ -85,11 +86,10 @@ public class WSWebPlugin extends AbstractPlugin {
                 }
 
                 endpointUrls.add(urlString);
-
                 endpointDefinitions.put(endpointName, endpointDefinition);
             }
 
-            wsServletModule = new WSServletModule(endpointUrls);
+            wsWebModule = new WSWebModule();
         }
 
         return InitState.INITIALIZED;
@@ -97,7 +97,7 @@ public class WSWebPlugin extends AbstractPlugin {
 
     @Override
     public Object nativeUnitModule() {
-        return wsServletModule;
+        return wsWebModule;
     }
 
     @Override
@@ -132,5 +132,25 @@ public class WSWebPlugin extends AbstractPlugin {
                 servletAdapter.getEndpoint().dispose();
             }
         }
+    }
+
+    @Override
+    public List<ServletDefinition> servlets() {
+        ServletDefinition wsServlet = new ServletDefinition("ws-metro", WSServlet.class);
+        wsServlet.setAsyncSupported(true);
+        for (String endpointUrl : endpointUrls) {
+            wsServlet.addMappings(endpointUrl);
+        }
+        return Lists.newArrayList(wsServlet);
+    }
+
+    @Override
+    public List<FilterDefinition> filters() {
+        return null;
+    }
+
+    @Override
+    public List<ListenerDefinition> listeners() {
+        return null;
     }
 }

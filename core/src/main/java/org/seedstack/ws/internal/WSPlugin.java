@@ -9,6 +9,7 @@ package org.seedstack.ws.internal;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.inject.Module;
 import com.oracle.webservices.api.databinding.DatabindingModeFeature;
 import com.oracle.webservices.api.databinding.ExternalMetadataFeature;
 import com.sun.xml.ws.api.BindingID;
@@ -38,6 +39,8 @@ import org.seedstack.seed.SeedException;
 import org.seedstack.seed.core.spi.configuration.ConfigurationProvider;
 import org.seedstack.seed.core.utils.SeedReflectionUtils;
 import org.seedstack.seed.core.utils.SeedSpecifications;
+import org.seedstack.seed.security.internal.SecurityGuiceConfigurer;
+import org.seedstack.seed.security.internal.SecurityProvider;
 import org.seedstack.ws.NoSecurityRealmAuthenticationAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +55,17 @@ import javax.xml.ws.http.HTTPBinding;
 import javax.xml.ws.soap.MTOMFeature;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static javax.xml.ws.soap.SOAPBinding.*;
+import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_BINDING;
+import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_MTOM_BINDING;
+import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING;
+import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING;
 
 /**
  * This plugin provides standalone JAX-WS integration.
@@ -62,7 +73,7 @@ import static javax.xml.ws.soap.SOAPBinding.*;
  * @author emmanuel.vinel@mpsa.com
  * @author adrien.lauer@mpsa.com
  */
-public class WSPlugin extends AbstractPlugin {
+public class WSPlugin extends AbstractPlugin implements SecurityProvider {
     public static final String CONFIGURATION_PREFIX = "org.seedstack.ws";
     public static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAP11HTTP_BINDING, SOAP12HTTP_BINDING, SOAP11HTTP_MTOM_BINDING, SOAP12HTTP_MTOM_BINDING);
 
@@ -418,6 +429,17 @@ public class WSPlugin extends AbstractPlugin {
             return HTTPBinding.HTTP_BINDING;
         }
         return lexical;
+    }
+
+
+    @Override
+    public Module provideMainSecurityModule(SecurityGuiceConfigurer securityGuiceConfigurer) {
+        return null;
+    }
+
+    @Override
+    public Module provideAdditionalSecurityModule() {
+        return new WSSecurityModule();
     }
 
     /**

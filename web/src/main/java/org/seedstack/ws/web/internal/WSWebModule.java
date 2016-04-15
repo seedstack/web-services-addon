@@ -7,12 +7,13 @@
  */
 package org.seedstack.ws.web.internal;
 
-import io.nuun.kernel.spi.Concern;
+import com.google.inject.AbstractModule;
+import com.google.inject.Scopes;
+import com.sun.xml.ws.transport.http.servlet.WSServlet;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@Retention(RetentionPolicy.RUNTIME)
-@Concern(name = "web-services", priority = Concern.Priority.NORMAL)
-public @interface WSConcern {
+class WSWebModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        bind(WSServlet.class).in(Scopes.SINGLETON);
+    }
 }
