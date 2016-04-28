@@ -25,7 +25,7 @@
     <properties>
         <poms.version>2.4.0</poms.version>
         <seed.version>2.3.0</seed.version>
-        <jms-addon.version>2.1.2-SNAPSHOT</jms-addon.version>
+        <jms-addon.version>2.1.2</jms-addon.version>
         <metro.version>2.3.1</metro.version>
 
         <compatibility.version>2.1.0</compatibility.version>
