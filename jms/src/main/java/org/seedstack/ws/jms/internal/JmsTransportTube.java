@@ -91,15 +91,7 @@ class JmsTransportTube extends AbstractTubeImpl {
             reqHeaders.put(JmsConstants.BINDING_VERSION, "1.0");
 
             byte[] rplPacket = con.sendMessage(requestPacketOutStream.toByteArray());
-
-            if (rplPacket == null) {
-                return doReturnWith(request.createClientResponse(null));    // one way. null response given.
-            }
-
-            String contentTypeStr = con.getResponseContentType();
             Packet reply = request.createClientResponse(null);
-            replyPacketInStream = new ByteArrayInputStream(rplPacket);
-            codec.decode(replyPacketInStream, contentTypeStr, reply);
 
             // Put JMS identifiers in invocation properties for later access in business code
             String requestMessageId = con.getRequestMessageId();
@@ -113,6 +105,12 @@ class JmsTransportTube extends AbstractTubeImpl {
             String correlationId = con.getCorrelationId();
             if (correlationId != null) {
                 reply.invocationProperties.put(JmsConstants.JMS_CORRELATION_ID, correlationId);
+            }
+
+            if (rplPacket != null) {
+                String contentTypeStr = con.getResponseContentType();
+                replyPacketInStream = new ByteArrayInputStream(rplPacket);
+                codec.decode(replyPacketInStream, contentTypeStr, reply);
             }
 
             return doReturnWith(reply);
@@ -133,7 +131,6 @@ class JmsTransportTube extends AbstractTubeImpl {
             }
         }
     }
-
 
     @Override
     public NextAction processResponse(Packet response) {
