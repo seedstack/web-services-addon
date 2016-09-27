@@ -176,4 +176,14 @@ public class WSJmsIT {
         assertThat(((String) responseContext.get(JmsConstants.JMS_REPLY_MESSAGE_ID))).isNotEmpty();
         assertThat(((String) responseContext.get(JmsConstants.JMS_CORRELATION_ID))).isNotEmpty();
     }
+
+    @Test
+    public void message_id_is_accessible_with_one_way() {
+        CalculatorService calculatorService = new CalculatorService();
+        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapJmsPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "jms:jndi:dynamicQueues/TEST.QUEUE?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory&jndiConnectionFactoryName=ConnectionFactory&jndiURL=vm://localhost?broker.persistent=false&deliveryMode=NON_PERSISTENT&messageType=text");
+        calculatorWS.clear();
+        Map<String, Object> responseContext = ((BindingProvider) calculatorWS).getResponseContext();
+        assertThat(((String) responseContext.get(JmsConstants.JMS_REQUEST_MESSAGE_ID))).isNotEmpty();
+    }
 }
