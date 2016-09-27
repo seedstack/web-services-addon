@@ -101,6 +101,20 @@ class JmsTransportTube extends AbstractTubeImpl {
             replyPacketInStream = new ByteArrayInputStream(rplPacket);
             codec.decode(replyPacketInStream, contentTypeStr, reply);
 
+            // Put JMS identifiers in invocation properties for later access in business code
+            String requestMessageId = con.getRequestMessageId();
+            if (requestMessageId != null) {
+                reply.invocationProperties.put(JmsConstants.JMS_REQUEST_MESSAGE_ID, requestMessageId);
+            }
+            String replyMessageId = con.getReplyMessageId();
+            if (replyMessageId != null) {
+                reply.invocationProperties.put(JmsConstants.JMS_REPLY_MESSAGE_ID, replyMessageId);
+            }
+            String correlationId = con.getCorrelationId();
+            if (correlationId != null) {
+                reply.invocationProperties.put(JmsConstants.JMS_CORRELATION_ID, correlationId);
+            }
+
             return doReturnWith(reply);
         } catch (WebServiceException wex) {
             throw wex;

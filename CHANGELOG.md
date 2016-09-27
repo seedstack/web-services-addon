@@ -1,3 +1,7 @@
+# Version 2.2.1.1 (2016-09-27)
+
+* [chg] Made JMS request message id, reply message id and correlation id accessible through the response context.
+
 # Version 2.2.2 (2016-04-26)
 
 * [chg] Update for SeedStack 16.4.
