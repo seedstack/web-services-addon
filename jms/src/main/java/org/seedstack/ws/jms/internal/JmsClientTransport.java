@@ -44,6 +44,9 @@ class JmsClientTransport {
     private final LoadingCache<SoapJmsUri, Connection> connectionCache;
     private final Packet packet;
     private final Map<String, String> requestHeaders;
+    private String requestMessageId;
+    private String replyMessageId;
+    private String correlationId;
     private Message replyMessage;
 
     @Inject
@@ -117,7 +120,7 @@ class JmsClientTransport {
                 }
 
                 if (packet.expectReply) {
-                    String correlationId = UUID.randomUUID().toString();
+                    correlationId = UUID.randomUUID().toString();
                     Destination replyDestination = SoapJmsUri.getReplyToDestination(destinationAddress, session);
 
                     if (replyDestination == null) {
@@ -137,6 +140,7 @@ class JmsClientTransport {
                 }
 
                 producer.send(message);
+                requestMessageId = message.getJMSMessageID();
                 producer.close();
             } catch (Exception e) {
                 throw new JmsTransportException("Error sending JMS message", e);
@@ -145,6 +149,7 @@ class JmsClientTransport {
             if (messageConsumer != null) {
                 try {
                     replyMessage = messageConsumer.receive(responseTimeout);
+                    replyMessageId = replyMessage.getJMSMessageID();
 
                     if (replyMessage instanceof BytesMessage) {
                         BytesMessage bytesReplyMessage = (BytesMessage) replyMessage;
@@ -202,5 +207,17 @@ class JmsClientTransport {
         } else {
             throw new WebServiceException("No response available");
         }
+    }
+
+    String getRequestMessageId() {
+        return requestMessageId;
+    }
+
+    String getReplyMessageId() {
+        return replyMessageId;
+    }
+
+    String getCorrelationId() {
+        return correlationId;
     }
 }
