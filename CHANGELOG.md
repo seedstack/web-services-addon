@@ -1,3 +1,7 @@
+# Version 2.2.1.1 (2016-09-27)
+
+* [chg] Made JMS request message id, reply message id and correlation id accessible through the response context.
+
 # Version 2.2.1 (2016-03-09)
 
 * [fix] Fix NPE that occurs during JMS text message reception if the `SOAPJMS_contentType` message property is not set.

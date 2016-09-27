@@ -12,11 +12,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.seedstack.seed.Configuration;
 import org.seedstack.seed.it.SeedITRunner;
+import org.seedstack.ws.jms.internal.JmsConstants;
 import org.seedstack.ws.jms.internal.JmsTransportException;
 import org.seedstack.wsdl.seed.calculator.CalculatorService;
 import org.seedstack.wsdl.seed.calculator.CalculatorWS;
 
 import javax.xml.ws.BindingProvider;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -161,5 +163,17 @@ public class WSJmsIT {
         CalculatorWS calculatorWS = calculatorService.getCalculatorSoapJmsPort();
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "jms:jndi:dynamicQueues/TEST.QUEUE?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory&jndiConnectionFactoryName=ConnectionFactory&jndiURL=vm://localhost?broker.persistent=false&deliveryMode=NON_PERSISTENT&messageType=text");
         assertThat(calculatorWS.add(1, 1)).isEqualTo(2);
+    }
+
+    @Test
+    public void message_identifiers_are_accessible() {
+        CalculatorService calculatorService = new CalculatorService();
+        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapJmsPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "jms:jndi:dynamicQueues/TEST.QUEUE?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory&jndiConnectionFactoryName=ConnectionFactory&jndiURL=vm://localhost?broker.persistent=false&deliveryMode=NON_PERSISTENT&messageType=text");
+        assertThat(calculatorWS.add(1, 1)).isEqualTo(2);
+        Map<String, Object> responseContext = ((BindingProvider) calculatorWS).getResponseContext();
+        assertThat(((String) responseContext.get(JmsConstants.JMS_REQUEST_MESSAGE_ID))).isNotEmpty();
+        assertThat(((String) responseContext.get(JmsConstants.JMS_REPLY_MESSAGE_ID))).isNotEmpty();
+        assertThat(((String) responseContext.get(JmsConstants.JMS_CORRELATION_ID))).isNotEmpty();
     }
 }
