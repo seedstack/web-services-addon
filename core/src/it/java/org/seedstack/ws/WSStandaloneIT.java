@@ -23,7 +23,7 @@ import javax.xml.ws.BindingProvider;
 import static org.junit.Assert.fail;
 
 public class WSStandaloneIT extends AbstractSeedIT {
-    @Configuration("org.seedstack.ws.test-port")
+    @Configuration("sys.seed\\.ws\\.port")
     private int wsPort;
 
     @Test(expected = ServerSOAPFaultException.class)

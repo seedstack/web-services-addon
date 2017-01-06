@@ -11,6 +11,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.inject.assistedinject.Assisted;
 import com.sun.xml.ws.api.message.Packet;
 import org.seedstack.seed.Application;
+import org.seedstack.ws.jms.WebServicesJmsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,11 +36,8 @@ import java.util.concurrent.ExecutionException;
 
 class JmsClientTransport {
     private static final Logger LOGGER = LoggerFactory.getLogger(JmsClientTransport.class);
-
-    public static final int DEFAULT_TIMEOUT_INTERVAL = 30000;
-    public static final String MESSAGE_TYPE_BYTES = "bytes";
-    public static final String MESSAGE_TYPE_TEXT = "text";
-
+    private static final String MESSAGE_TYPE_BYTES = "bytes";
+    private static final String MESSAGE_TYPE_TEXT = "text";
     private final int responseTimeout;
     private final LoadingCache<SoapJmsUri, Connection> connectionCache;
     private final Packet packet;
@@ -53,7 +51,7 @@ class JmsClientTransport {
     JmsClientTransport(Application application, LoadingCache<SoapJmsUri, Connection> connectionCache, @Assisted Packet packet, @Assisted Map<String, String> requestHeaders) {
         this.packet = packet;
         this.requestHeaders = requestHeaders;
-        this.responseTimeout = application.getConfiguration().getInt("org.seedstack.ws.jms.client-timeout", DEFAULT_TIMEOUT_INTERVAL);
+        this.responseTimeout = application.getConfiguration().get(WebServicesJmsConfig.class).jms().getClientTimeout();
         this.connectionCache = connectionCache;
     }
 

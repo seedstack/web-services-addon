@@ -11,7 +11,7 @@ import com.sun.xml.ws.api.ResourceLoader;
 import com.sun.xml.ws.api.server.BoundEndpoint;
 import com.sun.xml.ws.api.server.Container;
 import com.sun.xml.ws.transport.http.servlet.ServletModule;
-import org.seedstack.seed.core.utils.SeedReflectionUtils;
+import org.seedstack.shed.ClassLoaders;
 
 import javax.servlet.ServletContext;
 import javax.xml.ws.WebServiceException;
@@ -31,7 +31,7 @@ class SeedServletContainer extends Container {
     private final ServletContext servletContext;
 
     private final ServletModule module = new ServletModule() {
-        private final List<BoundEndpoint> endpoints = new ArrayList<BoundEndpoint>();
+        private final List<BoundEndpoint> endpoints = new ArrayList<>();
 
         @Override
         public List<BoundEndpoint> getBoundEndpoints() {
@@ -58,7 +58,7 @@ class SeedServletContainer extends Container {
             // See: https://java.net/jira/browse/JAX_WS-1175
 
             this.servletContext = (ServletContext) Proxy.newProxyInstance(
-                    SeedReflectionUtils.findMostCompleteClassLoader(SeedServletContainer.class),
+                    ClassLoaders.findMostCompleteClassLoader(SeedServletContainer.class),
                     new Class[]{ServletContext.class},
                     new ServletContextProxy(servletContext)
             );
@@ -70,7 +70,7 @@ class SeedServletContainer extends Container {
     @Override
     public <T> T getSPI(Class<T> spiType) {
         if (spiType == ServletContext.class) {
-            if (isCalledForRealmAuthenticationAdapter(SeedReflectionUtils.findCaller(this))) {
+            if (isCalledForRealmAuthenticationAdapter(findCaller())) {
                 // Force the RealmAuthenticationAdapter to be searched from classpath instead of weird webapp location
                 return null;
             }
@@ -92,6 +92,22 @@ class SeedServletContainer extends Container {
                 (WSIT_SERVER_AUTH_CONTEXT_CLASS_NAME.equals(stackTrace.getClassName()) || SECURITY_SERVER_TUBE_CLASS_NAME.equals(stackTrace.getClassName())) &&
                 GET_REALM_AUTHENTICATION_ADAPTER_METHOD_NAME.equals(stackTrace.getMethodName());
 
+    }
+
+    /**
+     * Find the caller of a method.
+     *
+     * @return the found StackTraceElement or null if not found.
+     */
+    private StackTraceElement findCaller() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            if (!stackTraceElement.getClassName().equals(Thread.class.getCanonicalName()) && !stackTraceElement.getClassName().equals(getClass().getCanonicalName())) {
+                return stackTraceElement;
+            }
+        }
+
+        return null;
     }
 
     private static class ServletContextProxy implements InvocationHandler {

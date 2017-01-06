@@ -7,9 +7,8 @@
  */
 package org.seedstack.ws.jms.internal;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
+import org.seedstack.ws.jms.WebServicesJmsConfig;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -46,9 +45,9 @@ final class SoapJmsUri {
     }
 
     static Map<String, String[]> parseUrlQueryString(String s) {
-        if (s == null) return new HashMap<String, String[]>(0);
+        if (s == null) return new HashMap<>(0);
         // In map1 we use strings and ArrayLists to collect the parameter values.
-        HashMap<String, Object> map1 = new HashMap<String, Object>();
+        HashMap<String, Object> map1 = new HashMap<>();
         int p = 0;
         while (p < s.length()) {
             int p0 = p;
@@ -65,7 +64,7 @@ final class SoapJmsUri {
                 map1.put(name, value);
             } else if (x instanceof String) {
                 // For multiple values, we use an ArrayList.
-                ArrayList<String> a = new ArrayList<String>();
+                ArrayList<String> a = new ArrayList<>();
                 a.add((String) x);
                 a.add(value);
                 map1.put(name, a);
@@ -76,7 +75,7 @@ final class SoapJmsUri {
             }
         }
         // Copy map1 to map2. Map2 uses string arrays to store the parameter values.
-        HashMap<String, String[]> map2 = new HashMap<String, String[]>(map1.size());
+        HashMap<String, String[]> map2 = new HashMap<>(map1.size());
         for (Map.Entry<String, Object> e : map1.entrySet()) {
             String name = e.getKey();
             Object x = e.getValue();
@@ -226,11 +225,11 @@ final class SoapJmsUri {
         return null;
     }
 
-    Configuration getConfiguration(Configuration wsConfiguration) {
+    WebServicesJmsConfig.JmsEndpointConfig getConfiguration(WebServicesJmsConfig webServicesJmsConfig) {
         if (endpointName != null) {
-            return wsConfiguration.subset(String.format("endpoint.%s.jms", endpointName));
+            return webServicesJmsConfig.getEndpoints().get(endpointName);
         } else {
-            return new BaseConfiguration();
+            return new WebServicesJmsConfig.JmsEndpointConfig();
         }
     }
 

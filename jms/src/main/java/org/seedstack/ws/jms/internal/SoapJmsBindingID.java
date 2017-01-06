@@ -72,7 +72,7 @@ final class SoapJmsBindingID {
 
     private static final class SOAPJMSImpl extends Impl implements Cloneable {
         static final String MTOM_PARAM = "mtom";
-        private final Map<String, String> parameters = new HashMap<String, String>();
+        private final Map<String, String> parameters = new HashMap<>();
 
         private SOAPJMSImpl(SOAPVersion version, String lexical, boolean canGenerateWSDL) {
             super(version, lexical, canGenerateWSDL);

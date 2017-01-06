@@ -1,3 +1,7 @@
+# Version 3.0.0 (2017-01-05)
+
+* [brk] Update to new configuration system.
+
 # Version 2.2.1.2 (2016-09-27)
 
 * [fix] Message identifiers were not accessible in one-way message exchanges.

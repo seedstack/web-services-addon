@@ -9,7 +9,6 @@ package org.seedstack.ws.internal;
 
 import com.sun.xml.ws.api.WSBinding;
 import com.sun.xml.ws.api.server.SDDocumentSource;
-import org.apache.commons.configuration.Configuration;
 import org.xml.sax.EntityResolver;
 
 import javax.xml.namespace.QName;
@@ -29,22 +28,21 @@ public class EndpointDefinition {
     private final org.xml.sax.EntityResolver resolver;
     private final boolean isTransportSynchronous;
     private final String url;
-    private final Configuration configuration;
 
     /**
      * Create the endpoint definition.
-     * @param implementorClass the WS implementation class.
+     *
+     * @param implementorClass         the WS implementation class.
      * @param processHandlerAnnotation if handler annotations should be processed.
-     * @param serviceName the service name.
-     * @param portName the port name.
-     * @param binding the binding.
-     * @param primaryWsdl the WSDL.
-     * @param resolver the entity resolver.
-     * @param isTransportSynchronous if transport is synchronous.
-     * @param url the endpoint url.
-     * @param configuration the endpoint configuration.
+     * @param serviceName              the service name.
+     * @param portName                 the port name.
+     * @param binding                  the binding.
+     * @param primaryWsdl              the WSDL.
+     * @param resolver                 the entity resolver.
+     * @param isTransportSynchronous   if transport is synchronous.
+     * @param url                      the endpoint url.
      */
-    public EndpointDefinition(Class<?> implementorClass, boolean processHandlerAnnotation, QName serviceName, QName portName, WSBinding binding, SDDocumentSource primaryWsdl, EntityResolver resolver, boolean isTransportSynchronous, String url, Configuration configuration) { // NOSONAR
+    public EndpointDefinition(Class<?> implementorClass, boolean processHandlerAnnotation, QName serviceName, QName portName, WSBinding binding, SDDocumentSource primaryWsdl, EntityResolver resolver, boolean isTransportSynchronous, String url) { // NOSONAR
         this.implementorClass = implementorClass;
         this.processHandlerAnnotation = processHandlerAnnotation;
         this.serviceName = serviceName;
@@ -54,7 +52,6 @@ public class EndpointDefinition {
         this.resolver = resolver;
         this.isTransportSynchronous = isTransportSynchronous;
         this.url = url;
-        this.configuration = configuration;
     }
 
     /**
@@ -118,12 +115,5 @@ public class EndpointDefinition {
      */
     public String getUrl() {
         return url;
-    }
-
-    /**
-     * @return the endpoint configuration subset.
-     */
-    public Configuration getConfiguration() {
-        return configuration;
     }
 }

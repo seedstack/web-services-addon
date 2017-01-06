@@ -14,21 +14,21 @@
     <parent>
         <groupId>org.seedstack.poms</groupId>
         <artifactId>parent-internal</artifactId>
-        <version>2.4.0</version>
+        <version>3.0.0</version>
     </parent>
 
     <groupId>org.seedstack.addons.ws</groupId>
     <artifactId>web-services</artifactId>
-    <version>2.3.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <poms.version>2.4.0</poms.version>
-        <seed.version>2.3.0</seed.version>
-        <jms-addon.version>2.1.2</jms-addon.version>
+        <poms.version>3.0.0</poms.version>
+        <seed.version>3.0.0</seed.version>
+        <jms-addon.version>3.0.0</jms-addon.version>
         <metro.version>2.3.1</metro.version>
 
-        <compatibility.version>2.1.0</compatibility.version>
+        <compatibility.skip>true</compatibility.skip>
 
         <bintray.package>web-services-addon</bintray.package>
     </properties>
@@ -64,6 +64,7 @@
                             <licenseMerge>Apache 2|The Apache Software License, Version 2.0</licenseMerge>
                             <licenseMerge>Apache 2|Apache License 2.0</licenseMerge>
                             <licenseMerge>Apache 2|Apache License, version 2.0</licenseMerge>
+                            <licenseMerge>Apache 2|Apache License Version 2.0</licenseMerge>
                             <licenseMerge>BSD|The New BSD License</licenseMerge>
                             <licenseMerge>CDDL|CDDL + GPLv2 with classpath exception</licenseMerge>
                             <licenseMerge>CDDL|CDDL+GPL License</licenseMerge>

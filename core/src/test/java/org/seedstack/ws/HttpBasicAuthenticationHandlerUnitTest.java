@@ -84,9 +84,9 @@ public class HttpBasicAuthenticationHandlerUnitTest {
     public void handleMessage_in_inBound_basic_auth_header() throws UnsupportedEncodingException {
         SOAPMessageContext messageContext = mock(SOAPMessageContext.class);
         when(messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).thenReturn(false);
-        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        Map<String, List<String>> headers = new HashMap<>();
         String token = "basic bG9naW46cGFzc3dvcmQ=";
-        List<String> arrayList = new ArrayList<String>();
+        List<String> arrayList = new ArrayList<>();
         arrayList.add(token);
         headers.put("Authorization", arrayList);
         when(messageContext.get(MessageContext.HTTP_REQUEST_HEADERS)).thenReturn(headers);
@@ -100,7 +100,7 @@ public class HttpBasicAuthenticationHandlerUnitTest {
     @Test
     public void handleMessage_in_inBound_basic_auth_header_login_fail() throws UnsupportedEncodingException {
         SOAPMessageContext messageContext = mock(SOAPMessageContext.class);
-        final Map<Object, Object> messaMap = new HashMap<Object, Object>();
+        final Map<Object, Object> messaMap = new HashMap<>();
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -111,9 +111,9 @@ public class HttpBasicAuthenticationHandlerUnitTest {
         }).when(messageContext).put(anyString(), anyString());
 
         when(messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).thenReturn(false);
-        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        Map<String, List<String>> headers = new HashMap<>();
         String token = "basic bG9naW46cGFzc3dvcmQ=";
-        List<String> arrayList = new ArrayList<String>();
+        List<String> arrayList = new ArrayList<>();
         arrayList.add(token);
         headers.put("Authorization", arrayList);
         when(messageContext.get(MessageContext.HTTP_REQUEST_HEADERS)).thenReturn(headers);
@@ -129,9 +129,9 @@ public class HttpBasicAuthenticationHandlerUnitTest {
     public void handleMessage_in_inBound_basic_auth_header_with_exception() throws UnsupportedEncodingException {
         SOAPMessageContext messageContext = mock(SOAPMessageContext.class);
         when(messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY)).thenReturn(false);
-        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        Map<String, List<String>> headers = new HashMap<>();
         String token = "basic bG9naW46cGFzc3dvcmQ=";
-        List<String> arrayList = new ArrayList<String>();
+        List<String> arrayList = new ArrayList<>();
         arrayList.add(token);
         headers.put("Authorization", arrayList);
         when(messageContext.get(MessageContext.HTTP_REQUEST_HEADERS)).thenReturn(headers);

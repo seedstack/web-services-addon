@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(SeedITRunner.class)
 public class WSJmsIT {
-    @Configuration("org.seedstack.ws.test-port")
+    @Configuration("sys.seed\\.ws\\.port")
     private int wsPort;
 
     @Test

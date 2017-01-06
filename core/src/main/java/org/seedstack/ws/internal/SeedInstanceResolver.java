@@ -8,7 +8,6 @@
 package org.seedstack.ws.internal;
 
 import com.google.inject.Injector;
-import org.seedstack.seed.core.utils.SeedReflectionUtils;
 import com.sun.xml.ws.api.message.Packet;
 import com.sun.xml.ws.server.AbstractMultiInstanceResolver;
 

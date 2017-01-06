@@ -7,9 +7,6 @@
  */
 package org.seedstack.ws;
 
-import org.seedstack.seed.it.AbstractSeedWebIT;
-import org.seedstack.wsdl.seed.calculator.CalculatorService;
-import org.seedstack.wsdl.seed.calculator.CalculatorWS;
 import com.sun.xml.ws.client.ClientTransportException;
 import com.sun.xml.ws.fault.ServerSOAPFaultException;
 import org.assertj.core.api.Assertions;
@@ -19,6 +16,9 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.seedstack.seed.it.AbstractSeedWebIT;
+import org.seedstack.wsdl.seed.calculator.CalculatorService;
+import org.seedstack.wsdl.seed.calculator.CalculatorWS;
 
 import javax.xml.ws.BindingProvider;
 import java.net.URL;
@@ -29,7 +29,7 @@ import static org.junit.Assert.fail;
 public class WSWebIT extends AbstractSeedWebIT {
     @Deployment
     public static WebArchive createDeployment() {
-        return ShrinkWrap.create(WebArchive.class).addAsResource("META-INF/configuration/org.seedstack.ws-web.props");
+        return ShrinkWrap.create(WebArchive.class);
     }
 
     @Test(expected = Exception.class) // TODO change for real security exception

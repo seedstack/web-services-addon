@@ -17,8 +17,8 @@ import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.PluginException;
 import io.nuun.kernel.api.plugin.context.Context;
 import io.nuun.kernel.api.plugin.context.InitContext;
-import io.nuun.kernel.core.AbstractPlugin;
-import org.seedstack.seed.SeedRuntime;
+import org.seedstack.seed.core.SeedRuntime;
+import org.seedstack.seed.core.internal.AbstractSeedPlugin;
 import org.seedstack.seed.web.spi.FilterDefinition;
 import org.seedstack.seed.web.spi.ListenerDefinition;
 import org.seedstack.seed.web.spi.ServletDefinition;
@@ -41,12 +41,12 @@ import java.util.Map;
  *
  * @author emmanuel.vinel@mpsa.com
  */
-public class WSWebPlugin extends AbstractPlugin implements WebProvider {
+public class WSWebPlugin extends AbstractSeedPlugin implements WebProvider {
     private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAPBinding.SOAP11HTTP_BINDING, SOAPBinding.SOAP12HTTP_BINDING, SOAPBinding.SOAP11HTTP_MTOM_BINDING, SOAPBinding.SOAP12HTTP_MTOM_BINDING);
     private static final Logger LOGGER = LoggerFactory.getLogger(WSWebPlugin.class);
 
-    private final Map<String, EndpointDefinition> endpointDefinitions = new HashMap<String, EndpointDefinition>();
-    private final List<String> endpointUrls = new ArrayList<String>();
+    private final Map<String, EndpointDefinition> endpointDefinitions = new HashMap<>();
+    private final List<String> endpointUrls = new ArrayList<>();
     private WSPlugin wsPlugin;
     private ServletContext servletContext;
     private ServletAdapterList servletAdapters;
@@ -59,17 +59,17 @@ public class WSWebPlugin extends AbstractPlugin implements WebProvider {
     }
 
     @Override
-    public Collection<Class<?>> requiredPlugins() {
-        return Lists.<Class<?>>newArrayList(WSPlugin.class);
+    public Collection<Class<?>> dependencies() {
+        return Lists.newArrayList(WSPlugin.class);
     }
 
     @Override
-    public void provideContainerContext(Object containerContext) {
-        servletContext = ((SeedRuntime) containerContext).contextAs(ServletContext.class);
+    public void setup(SeedRuntime seedRuntime) {
+        servletContext = seedRuntime.contextAs(ServletContext.class);
     }
 
     @Override
-    public InitState init(InitContext initContext) {
+    public InitState initialize(InitContext initContext) {
         wsPlugin = initContext.dependency(WSPlugin.class);
 
         // Always disable standalone publishing (it will not work with the servlet specific configuration anyway)

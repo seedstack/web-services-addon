@@ -7,7 +7,7 @@
  */
 package org.seedstack.ws.jms.internal;
 
-import org.seedstack.seed.ErrorCode;
+import org.seedstack.shed.exception.ErrorCode;
 
 enum WSJmsErrorCodes implements ErrorCode {
     UNABLE_TO_ROLLBACK_WS_JMS_MESSAGE,

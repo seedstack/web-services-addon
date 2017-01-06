@@ -7,8 +7,8 @@
  */
 package org.seedstack.ws.internal;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.inject.Module;
 import com.oracle.webservices.api.databinding.DatabindingModeFeature;
 import com.oracle.webservices.api.databinding.ExternalMetadataFeature;
@@ -26,31 +26,24 @@ import com.sun.xml.ws.transport.http.ResourceLoader;
 import com.sun.xml.ws.transport.http.server.HttpEndpoint;
 import com.sun.xml.ws.transport.http.server.ServerAdapterList;
 import com.sun.xml.ws.util.xml.XmlUtil;
-import com.sun.xml.wss.RealmAuthenticationAdapter;
 import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.context.Context;
 import io.nuun.kernel.api.plugin.context.InitContext;
 import io.nuun.kernel.api.plugin.request.BindingRequest;
 import io.nuun.kernel.api.plugin.request.ClasspathScanRequest;
-import io.nuun.kernel.core.AbstractPlugin;
-import org.apache.commons.configuration.Configuration;
 import org.kametic.specifications.Specification;
 import org.seedstack.seed.SeedException;
-import org.seedstack.seed.core.spi.configuration.ConfigurationProvider;
-import org.seedstack.seed.core.utils.SeedReflectionUtils;
-import org.seedstack.seed.core.utils.SeedSpecifications;
+import org.seedstack.seed.core.internal.AbstractSeedPlugin;
 import org.seedstack.seed.security.internal.SecurityGuiceConfigurer;
 import org.seedstack.seed.security.internal.SecurityProvider;
-import org.seedstack.ws.NoSecurityRealmAuthenticationAdapter;
+import org.seedstack.shed.ClassLoaders;
+import org.seedstack.ws.WebServicesConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.EntityResolver;
 
 import javax.jws.WebService;
 import javax.xml.namespace.QName;
-import javax.xml.ws.WebServiceClient;
-import javax.xml.ws.handler.LogicalHandler;
-import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.http.HTTPBinding;
 import javax.xml.ws.soap.MTOMFeature;
 import java.net.MalformedURLException;
@@ -60,6 +53,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_BINDING;
@@ -69,14 +63,9 @@ import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING;
 
 /**
  * This plugin provides standalone JAX-WS integration.
- *
- * @author emmanuel.vinel@mpsa.com
- * @author adrien.lauer@mpsa.com
  */
-public class WSPlugin extends AbstractPlugin implements SecurityProvider {
-    public static final String CONFIGURATION_PREFIX = "org.seedstack.ws";
-    public static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAP11HTTP_BINDING, SOAP12HTTP_BINDING, SOAP11HTTP_MTOM_BINDING, SOAP12HTTP_MTOM_BINDING);
-
+public class WSPlugin extends AbstractSeedPlugin implements SecurityProvider {
+    private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAP11HTTP_BINDING, SOAP12HTTP_BINDING, SOAP11HTTP_MTOM_BINDING, SOAP12HTTP_MTOM_BINDING);
     private static final Logger LOGGER = LoggerFactory.getLogger(WSPlugin.class);
     private static final String XSD_REGEX = ".*\\.xsd";
     private static final String WSDL_REGEX = ".*\\.wsdl";
@@ -84,22 +73,17 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
     private static final String IMPLEMENTATION_CLASS_ATTRIBUTE = "implementationClass";
     private static final String WSDL_LOCATION_ATTRIBUTE = "wsdlLocation";
 
-    private final Specification<Class<?>> webServiceAnnotatedCandidateClass = and(classAnnotatedWith(WebService.class), not(SeedSpecifications.classIsInterface()), not(SeedSpecifications.classIsAbstract()));
-    private final Specification<Class<?>> webServiceClientAnnotatedCandidateClass = and(classAnnotatedWith(WebServiceClient.class), not(SeedSpecifications.classIsInterface()), not(SeedSpecifications.classIsAbstract()));
-    private final Specification<Class<?>> handler = and(classImplements(SOAPHandler.class), or(classImplements(LogicalHandler.class)), or(classImplements(SOAPHandler.class)));
+    private final ClassLoader classLoader = ClassLoaders.findMostCompleteClassLoader(WSPlugin.class);
+    private final Set<Class<?>> webServiceClasses = new HashSet<>();
+    private final Set<Class<?>> webServiceClientClasses = new HashSet<>();
 
-    private final ClassLoader classLoader = SeedReflectionUtils.findMostCompleteClassLoader(WSPlugin.class);
-    private final Set<Class<?>> webServiceClasses = new HashSet<Class<?>>();
-    private final Set<Class<?>> webServiceClientClasses = new HashSet<Class<?>>();
-
-    private final Map<String, SDDocumentSource> docs = new HashMap<String, SDDocumentSource>();
-    private final Map<String, EndpointDefinition> endpointDefinitions = new HashMap<String, EndpointDefinition>();
-    private final Map<String, HttpEndpoint> httpEndpoints = new HashMap<String, HttpEndpoint>();
+    private final Map<String, SDDocumentSource> docs = new HashMap<>();
+    private final Map<String, EndpointDefinition> endpointDefinitions = new HashMap<>();
+    private final Map<String, HttpEndpoint> httpEndpoints = new HashMap<>();
     private final ServerAdapterList serverAdapters = new ServerAdapterList();
 
     private ResourceLoader resourceLoader;
-    private Configuration wsConfiguration;
-    private Class<? extends RealmAuthenticationAdapter> realmAuthenticationAdapterClass;
+    private WebServicesConfig webServicesConfig;
     private boolean disableEndpointPublishing;
 
     @Override
@@ -113,12 +97,28 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public InitState init(InitContext initContext) {
-        wsConfiguration = initContext.dependency(ConfigurationProvider.class)
-                .getConfiguration().subset(WSPlugin.CONFIGURATION_PREFIX);
+    public Collection<ClasspathScanRequest> classpathScanRequests() {
+        return classpathScanRequestBuilder()
+                .specification(WSSpecifications.WEB_SERVICE_SPEC)
+                .specification(WSSpecifications.WEB_SERVICE_CLIENT_SPEC)
+                .resourcesRegex(XSD_REGEX)
+                .resourcesRegex(WSDL_REGEX)
+                .build();
+    }
 
-        if (wsConfiguration == null) {
+    @Override
+    public Collection<BindingRequest> bindingRequests() {
+        return bindingRequestsBuilder()
+                .specification(WSSpecifications.HANDLER_SPEC)
+                .build();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public InitState initialize(InitContext initContext) {
+        webServicesConfig = getConfiguration(WebServicesConfig.class);
+
+        if (webServicesConfig == null) {
             throw SeedException.createNew(WSErrorCode.NO_WS_CONFIGURATION);
         }
 
@@ -140,41 +140,27 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
 
         Map<Specification, Collection<Class<?>>> scannedTypesBySpecification = initContext.scannedTypesBySpecification();
 
-        Collection<Class<?>> webServiceClientAnnotatedClassCandidates = scannedTypesBySpecification.get(webServiceClientAnnotatedCandidateClass);
+        Collection<Class<?>> webServiceClientAnnotatedClassCandidates = scannedTypesBySpecification.get(WSSpecifications.WEB_SERVICE_CLIENT_SPEC);
         for (Class<?> webServiceClientAnnotatedClassCandidate : webServiceClientAnnotatedClassCandidates) {
             webServiceClientClasses.add(webServiceClientAnnotatedClassCandidate);
         }
 
-        Collection<Class<?>> webServiceAnnotatedClassCandidates = scannedTypesBySpecification.get(webServiceAnnotatedCandidateClass);
+        Collection<Class<?>> webServiceAnnotatedClassCandidates = scannedTypesBySpecification.get(WSSpecifications.WEB_SERVICE_SPEC);
         for (Class webServiceAnnotatedClassCandidate : webServiceAnnotatedClassCandidates) {
             webServiceClasses.add(webServiceAnnotatedClassCandidate);
         }
 
-        String[] endpointNames = wsConfiguration.getStringArray("endpoints");
-        if (endpointNames.length == 0) {
+        if (webServicesConfig.getEndpoints().isEmpty()) {
             LOGGER.info("No WS endpoint declared");
         }
-
-        for (String endpointName : endpointNames) {
-            endpointDefinitions.put(endpointName, createEndpointDefinition(endpointName, wsConfiguration.subset("endpoint." + endpointName)));
-        }
-
-        String realmAuthenticationAdapterClassname = wsConfiguration.getString("wss.realm-authentication-adapter", NoSecurityRealmAuthenticationAdapter.class.getCanonicalName());
-        Class<?> loadedClass;
-
-        try {
-            loadedClass = Class.forName(realmAuthenticationAdapterClassname);
-        } catch (ClassNotFoundException e) {
-            throw SeedException.wrap(e, WSErrorCode.UNABLE_TO_LOAD_REALM_AUTHENTICATION_ADAPTER_CLASS).put("classname", realmAuthenticationAdapterClassname);
-        }
-
-        if (RealmAuthenticationAdapter.class.isAssignableFrom(loadedClass)) {
-            realmAuthenticationAdapterClass = (Class<? extends RealmAuthenticationAdapter>) loadedClass;
-        } else {
-            throw SeedException.createNew(WSErrorCode.INVALID_REALM_AUTHENTICATION_ADAPTER_CLASS);
-        }
+        webServicesConfig.getEndpoints().forEach((key, value) -> endpointDefinitions.put(key, createEndpointDefinition(key, value)));
 
         return InitState.INITIALIZED;
+    }
+
+    @Override
+    public Object nativeUnitModule() {
+        return new WSModule(webServiceClasses, webServiceClientClasses, webServicesConfig.wss().getRealmAuthenticationAdapter());
     }
 
     @Override
@@ -211,32 +197,6 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
         }
     }
 
-    @Override
-    public Collection<Class<?>> requiredPlugins() {
-        return Lists.<Class<?>>newArrayList(ConfigurationProvider.class);
-    }
-
-    @Override
-    public Collection<ClasspathScanRequest> classpathScanRequests() {
-        return classpathScanRequestBuilder()
-                .specification(webServiceAnnotatedCandidateClass)
-                .specification(webServiceClientAnnotatedCandidateClass)
-                .resourcesRegex(XSD_REGEX)
-                .resourcesRegex(WSDL_REGEX)
-                .build();
-    }
-
-    @Override
-    public Collection<BindingRequest> bindingRequests() {
-        return bindingRequestsBuilder().specification(handler).build();
-    }
-
-    @Override
-    public Object nativeUnitModule() {
-        return new WSModule(webServiceClasses, webServiceClientClasses, realmAuthenticationAdapterClass);
-
-    }
-
     /**
      * Return the endpoint definitions corresponding to the list of supplied supported bindings.
      *
@@ -244,7 +204,7 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
      * @return the map of names to endpoint definitions.
      */
     public Map<String, EndpointDefinition> getEndpointDefinitions(List<String> supportedBindings) {
-        Map<String, EndpointDefinition> wsEndpoints = new HashMap<String, EndpointDefinition>();
+        Map<String, EndpointDefinition> wsEndpoints = new HashMap<>();
         for (Map.Entry<String, EndpointDefinition> endpointDefinitionEntry : this.endpointDefinitions.entrySet()) {
             if (supportedBindings.contains(endpointDefinitionEntry.getValue().getBinding().getBindingId().toString())) {
                 wsEndpoints.put(endpointDefinitionEntry.getKey(), endpointDefinitionEntry.getValue());
@@ -278,45 +238,37 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
         );
     }
 
-    private EndpointDefinition createEndpointDefinition(String endpoint, Configuration endpointConfiguration) {
-        // Implementation class
-        String implementation = endpointConfiguration.getString("implementation");
-        if (implementation == null || implementation.isEmpty()) {
-            throw SeedException.createNew(WSErrorCode.IMPLEMENTATION_CLASS_MISSING).put(ENDPOINT_NAME_ATTRIBUTE, endpoint);
-        }
-
-        Class<?> implementationClass;
-        try {
-            implementationClass = Class.forName(implementation);
-        } catch (ClassNotFoundException e) {
-            throw SeedException.wrap(e, WSErrorCode.UNABLE_TO_LOAD_IMPLEMENTATION_CLASS).put(ENDPOINT_NAME_ATTRIBUTE, endpoint).put(IMPLEMENTATION_CLASS_ATTRIBUTE, implementation);
-        }
-
+    private EndpointDefinition createEndpointDefinition(String endpoint, WebServicesConfig.EndpointConfig endpointConfiguration) {
         // External metadata
         MetadataReader metadataReader = null;
-        String externalMetadata = endpointConfiguration.getString("external-metadata");
+        String externalMetadata = endpointConfiguration.getExternalMetadata();
+        Class<?> implementationClass = endpointConfiguration.getImplementation();
         if (externalMetadata != null) {
-            metadataReader = ExternalMetadataFeature.builder().addResources(externalMetadata).build().getMetadataReader(SeedReflectionUtils.findMostCompleteClassLoader(implementationClass), false);
+            metadataReader = ExternalMetadataFeature
+                    .builder()
+                    .addResources(externalMetadata)
+                    .build()
+                    .getMetadataReader(ClassLoaders.findMostCompleteClassLoader(endpointConfiguration.getImplementation()), false);
         }
 
-        EndpointFactory.verifyImplementorClass(implementationClass, metadataReader);
+        EndpointFactory.verifyImplementorClass(endpointConfiguration.getImplementation(), metadataReader);
 
         // Service name
-        String serviceName = endpointConfiguration.getString("service-name");
         QName serviceQName;
-        if (serviceName == null || serviceName.isEmpty()) {
-            WebService annotation = implementationClass.getAnnotation(WebService.class);
+        String serviceName = endpointConfiguration.getServiceName();
+        if (Strings.isNullOrEmpty(serviceName)) {
+            WebService annotation = endpointConfiguration.getImplementation().getAnnotation(WebService.class);
             if (annotation != null && !annotation.targetNamespace().isEmpty() && !annotation.serviceName().isEmpty()) {
                 serviceQName = new QName(annotation.targetNamespace(), annotation.serviceName());
             } else {
-                serviceQName = EndpointFactory.getDefaultServiceName(implementationClass, metadataReader);
+                serviceQName = EndpointFactory.getDefaultServiceName(endpointConfiguration.getImplementation(), metadataReader);
             }
         } else {
             serviceQName = QName.valueOf(serviceName);
         }
 
         // Service port
-        String portName = endpointConfiguration.getString("port-name");
+        String portName = endpointConfiguration.getPortName();
         QName portQName;
         if (portName == null || portName.isEmpty()) {
             WebService annotation = implementationClass.getAnnotation(WebService.class);
@@ -330,7 +282,7 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
         }
 
         // Binding
-        String binding = endpointConfiguration.getString("binding");
+        String binding = endpointConfiguration.getBinding();
         if (binding != null) {
             binding = getBindingIdForToken(binding);
         }
@@ -338,15 +290,15 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
         WSBinding wsBinding = createBinding(
                 binding,
                 implementationClass,
-                endpointConfiguration.getBoolean("enable-mtom", null),
-                endpointConfiguration.getInteger("mtom-treshold", null),
-                endpointConfiguration.getString("data-binding-mode", null)
+                endpointConfiguration.getEnableMtom(),
+                endpointConfiguration.getMtomThreshold(),
+                endpointConfiguration.getDataBindingMode()
         );
 
         // WSDL
-        String wsdlPath = endpointConfiguration.getString("wsdl", EndpointFactory.getWsdlLocation(implementationClass, metadataReader));
+        String wsdlPath = Optional.of(endpointConfiguration.getWsdl()).orElse(EndpointFactory.getWsdlLocation(implementationClass, metadataReader));
         if (wsdlPath == null || wsdlPath.isEmpty()) {
-            throw SeedException.createNew(WSErrorCode.WSDL_LOCATION_MISSING).put(ENDPOINT_NAME_ATTRIBUTE, endpoint).put(IMPLEMENTATION_CLASS_ATTRIBUTE, implementation);
+            throw SeedException.createNew(WSErrorCode.WSDL_LOCATION_MISSING).put(ENDPOINT_NAME_ATTRIBUTE, endpoint).put(IMPLEMENTATION_CLASS_ATTRIBUTE, endpointConfiguration.getImplementation());
         }
 
         URL wsdlURL;
@@ -372,7 +324,17 @@ public class WSPlugin extends AbstractPlugin implements SecurityProvider {
             entityResolver = XmlUtil.createEntityResolver(null);
         }
 
-        return new EndpointDefinition(implementationClass, true, serviceQName, portQName, wsBinding, primaryWSDL, entityResolver, false, endpointConfiguration.getString("url"), endpointConfiguration);
+        return new EndpointDefinition(
+                implementationClass,
+                true,
+                serviceQName,
+                portQName,
+                wsBinding,
+                primaryWSDL,
+                entityResolver,
+                false,
+                endpointConfiguration.getUrl()
+        );
     }
 
     private WSBinding createBinding(String ddBindingId, Class implClass, Boolean mtomEnabled, Integer mtomThreshold, String dataBindingMode) {

@@ -15,24 +15,30 @@ import com.google.common.collect.Lists;
 import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.PluginException;
 import io.nuun.kernel.api.plugin.context.InitContext;
-import io.nuun.kernel.core.AbstractPlugin;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.seedstack.jms.internal.JmsPlugin;
 import org.seedstack.jms.spi.ConnectionDefinition;
 import org.seedstack.jms.spi.JmsFactory;
 import org.seedstack.jms.spi.MessageListenerInstanceDefinition;
-import org.seedstack.jms.spi.MessagePoller;
 import org.seedstack.seed.SeedException;
-import org.seedstack.seed.core.spi.configuration.ConfigurationProvider;
+import org.seedstack.seed.core.internal.AbstractSeedPlugin;
 import org.seedstack.ws.internal.EndpointDefinition;
 import org.seedstack.ws.internal.WSPlugin;
+import org.seedstack.ws.jms.WebServicesJmsConfig;
 
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Session;
 import javax.naming.NamingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -40,39 +46,36 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author adrien.lauer@mpsa.com
  */
-public class WSJmsPlugin extends AbstractPlugin {
-    public static final List<String> SUPPORTED_BINDINGS = ImmutableList.of("http://www.w3.org/2010/soapjms/");
-
-    public static final int DEFAULT_CACHE_CONCURRENCY = 4;
-    public static final int DEFAULT_CACHE_SIZE = 16;
-    public static final String LISTENER_NAME_PATTERN = "ws-%s-listener";
-    public static final String ANONYMOUS_CONNECTION_PATTERN = "ws-anon-connection-%d";
-
-    private final Set<WSJmsMessageListener> wsJmsMessageListeners = new HashSet<WSJmsMessageListener>();
-
+public class WSJmsPlugin extends AbstractSeedPlugin {
+    private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of("http://www.w3.org/2010/soapjms/");
+    private static final String LISTENER_NAME_PATTERN = "ws-%s-listener";
+    private static final String ANONYMOUS_CONNECTION_PATTERN = "ws-anon-connection-%d";
+    private final Set<WSJmsMessageListener> wsJmsMessageListeners = new HashSet<>();
     private LoadingCache<SoapJmsUri, Connection> connectionCache;
-
     private JmsPlugin jmsPlugin;
-    private WSPlugin wsPlugin;
 
     @Override
     public String name() {
-        return "ws-jms";
+        return "wsJms";
     }
 
     @Override
-    public InitState init(InitContext initContext) {
-        jmsPlugin = initContext.dependency(JmsPlugin.class);
-        wsPlugin = initContext.dependency(WSPlugin.class);
-        Configuration wsConfiguration = initContext.dependency(ConfigurationProvider.class)
-                .getConfiguration().subset(WSPlugin.CONFIGURATION_PREFIX);
+    public Collection<Class<?>> dependencies() {
+        return Lists.newArrayList(WSPlugin.class, JmsPlugin.class);
+    }
 
-        int cacheSize = wsConfiguration.getInt("jms.transport-cache.max-size", DEFAULT_CACHE_SIZE);
-        final Configuration finalWsConfiguration = wsConfiguration;
+    @Override
+    public InitState initialize(InitContext initContext) {
+        jmsPlugin = initContext.dependency(JmsPlugin.class);
+        WSPlugin wsPlugin = initContext.dependency(WSPlugin.class);
+        final WebServicesJmsConfig webServicesJmsConfig = getConfiguration(WebServicesJmsConfig.class);
+
+        WebServicesJmsConfig.JmsConfig.CacheConfig cacheConfig = webServicesJmsConfig.jms().cache();
+        int cacheSize = cacheConfig.getMaxSize();
         connectionCache = CacheBuilder.newBuilder()
                 .maximumSize(cacheSize)
-                .concurrencyLevel(wsConfiguration.getInt("transport-cache.concurrency", DEFAULT_CACHE_CONCURRENCY))
-                .initialCapacity(wsConfiguration.getInt("transport-cache.initial-size", cacheSize / 4))
+                .concurrencyLevel(cacheConfig.getConcurrencyLevel())
+                .initialCapacity(cacheConfig.getInitialSize())
                 .build(new CacheLoader<SoapJmsUri, Connection>() {
                     private AtomicInteger atomicInteger = new AtomicInteger(0);
 
@@ -95,7 +98,7 @@ public class WSJmsPlugin extends AbstractPlugin {
 
                             ConnectionDefinition connectionDefinition = jmsFactory.createConnectionDefinition(
                                     connectionName,
-                                    soapJmsUri.getConfiguration(finalWsConfiguration),
+                                    soapJmsUri.getConfiguration(webServicesJmsConfig).jms().getConnection(),
                                     (ConnectionFactory) SoapJmsUri.getContext(soapJmsUri).lookup(jndiConnectionFactoryName)
                             );
 
@@ -136,7 +139,7 @@ public class WSJmsPlugin extends AbstractPlugin {
                 throw new PluginException("Unable to parse endpoint URI", e);
             }
 
-            Configuration endpointConfiguration = uri.getConfiguration(wsConfiguration);
+            WebServicesJmsConfig.JmsEndpointConfig endpointConfiguration = uri.getConfiguration(webServicesJmsConfig);
             Connection connection;
             try {
                 connection = connectionCache.get(uri);
@@ -146,7 +149,7 @@ public class WSJmsPlugin extends AbstractPlugin {
 
             Session session;
             try {
-                session = connection.createSession(endpointConfiguration.getBoolean("transactional", true), Session.AUTO_ACKNOWLEDGE);
+                session = connection.createSession(endpointConfiguration.jms().isTransactional(), Session.AUTO_ACKNOWLEDGE);
             } catch (JMSException e) {
                 throw new PluginException("Unable to create JMS session for WS " + serviceNameAndServicePort, e);
             }
@@ -162,17 +165,15 @@ public class WSJmsPlugin extends AbstractPlugin {
 
             String messageListenerName = String.format(LISTENER_NAME_PATTERN, endpointName);
             try {
-                Class<? extends MessagePoller> poller = getPoller(endpointConfiguration);
-
                 jmsPlugin.registerMessageListener(
                         new MessageListenerInstanceDefinition(
                                 messageListenerName,
                                 uri.getConnectionName(),
                                 session,
                                 destination,
-                                endpointConfiguration.getString("selector"),
+                                endpointConfiguration.jms().getSelector(),
                                 messageListener,
-                                poller
+                                endpointConfiguration.jms().getMessagePoller()
                         )
                 );
             } catch (Exception e) {
@@ -184,13 +185,9 @@ public class WSJmsPlugin extends AbstractPlugin {
         return InitState.INITIALIZED;
     }
 
-    @SuppressWarnings("unchecked")
-    private Class<? extends MessagePoller> getPoller(Configuration endpointConfiguration) throws ClassNotFoundException {
-        String pollerClassName = endpointConfiguration.getString("poller");
-        if (pollerClassName != null) {
-            return (Class<? extends MessagePoller>) Class.forName(pollerClassName);
-        }
-        return null;
+    @Override
+    public Object nativeUnitModule() {
+        return new WSJmsModule(wsJmsMessageListeners, connectionCache);
     }
 
     @Override
@@ -199,15 +196,5 @@ public class WSJmsPlugin extends AbstractPlugin {
             connectionCache.invalidateAll();
             connectionCache.cleanUp();
         }
-    }
-
-    @Override
-    public Collection<Class<?>> requiredPlugins() {
-        return Lists.<Class<?>>newArrayList(WSPlugin.class, ConfigurationProvider.class, JmsPlugin.class);
-    }
-
-    @Override
-    public Object nativeUnitModule() {
-        return new WSJmsModule(wsJmsMessageListeners, connectionCache);
     }
 }

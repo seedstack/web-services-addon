@@ -68,7 +68,7 @@ class JmsTransportTube extends AbstractTubeImpl {
             Map<String, String> reqHeaders = (Map<String, String>) request.invocationProperties.get(JmsConstants.JMS_REQUEST_HEADERS);
 
             if (reqHeaders == null) {
-                reqHeaders = new HashMap<String, String>();
+                reqHeaders = new HashMap<>();
             }
 
             JmsClientTransport con = wsJmsTransportFactory.createJmsClientTransport(request, reqHeaders);
