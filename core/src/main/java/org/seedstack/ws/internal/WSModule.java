@@ -11,41 +11,27 @@ package org.seedstack.ws.internal;
 import com.google.inject.AbstractModule;
 import com.sun.xml.wss.RealmAuthenticationAdapter;
 import org.seedstack.ws.HttpBasicAuthenticationHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
 class WSModule extends AbstractModule {
-    private static final Logger LOGGER = LoggerFactory.getLogger(WSModule.class);
-
     private final Set<Class<?>> webServiceAnnotatedClasses;
-    private final Set<Class<?>> webServiceclientClasses;
+    private final Set<Class<?>> webServiceClientClasses;
     private final Class<? extends RealmAuthenticationAdapter> realmAuthenticationAdapterClass;
 
-    WSModule(Set<Class<?>> webServiceAnnotatedClassAndInterface, Set<Class<?>> webServiceclientClass, Class<? extends RealmAuthenticationAdapter> realmAuthenticationAdapterClass) {
+    WSModule(Set<Class<?>> webServiceAnnotatedClassAndInterface, Set<Class<?>> webServiceClientClass, Class<? extends RealmAuthenticationAdapter> realmAuthenticationAdapterClass) {
         this.webServiceAnnotatedClasses = webServiceAnnotatedClassAndInterface;
-        this.webServiceclientClasses = webServiceclientClass;
+        this.webServiceClientClasses = webServiceClientClass;
         this.realmAuthenticationAdapterClass = realmAuthenticationAdapterClass;
     }
-
 
     @Override
     protected void configure() {
         requestStaticInjection(SeedInstanceResolver.class);
         requestStaticInjection(HttpBasicAuthenticationHandler.class);
         requestStaticInjection(SeedRealmAuthenticationAdapterDelegate.class);
-
         bind(RealmAuthenticationAdapter.class).to(realmAuthenticationAdapterClass);
-
-        for (Class<?> webServiceAnnotatedClass : webServiceAnnotatedClasses) {
-            LOGGER.info("Binding web service " + webServiceAnnotatedClass.getSimpleName());
-            bind(webServiceAnnotatedClass);
-        }
-
-        for (Class webServiceClientClazz : webServiceclientClasses) {
-            LOGGER.info("Binding web service client " + webServiceClientClazz.getSimpleName());
-            bind(webServiceClientClazz);
-        }
+        webServiceAnnotatedClasses.forEach(this::bind);
+        webServiceClientClasses.forEach(this::bind);
     }
 }

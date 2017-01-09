@@ -68,7 +68,7 @@ public class WSJmsPlugin extends AbstractSeedPlugin {
         WSPlugin wsPlugin = initContext.dependency(WSPlugin.class);
         final WebServicesJmsConfig webServicesJmsConfig = getConfiguration(WebServicesJmsConfig.class);
 
-        WebServicesJmsConfig.JmsConfig.CacheConfig cacheConfig = webServicesJmsConfig.jms().cache();
+        WebServicesJmsConfig.JmsConfig.CacheConfig cacheConfig = webServicesJmsConfig.jms().connectionCache();
         int cacheSize = cacheConfig.getMaxSize();
         connectionCache = CacheBuilder.newBuilder()
                 .maximumSize(cacheSize)

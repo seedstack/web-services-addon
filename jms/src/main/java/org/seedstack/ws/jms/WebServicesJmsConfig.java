@@ -87,7 +87,7 @@ public class WebServicesJmsConfig {
     public static class JmsConfig {
         private static final int DEFAULT_TIMEOUT_INTERVAL = 30000;
         private int clientTimeout = DEFAULT_TIMEOUT_INTERVAL;
-        private CacheConfig cache = new CacheConfig();
+        private CacheConfig connectionCache = new CacheConfig();
 
         public int getClientTimeout() {
             return clientTimeout;
@@ -98,11 +98,11 @@ public class WebServicesJmsConfig {
             return this;
         }
 
-        public CacheConfig cache() {
-            return cache;
+        public CacheConfig connectionCache() {
+            return connectionCache;
         }
 
-        @Config("cache")
+        @Config("connectionCache")
         public static class CacheConfig {
             private static final int DEFAULT_CACHE_CONCURRENCY = 4;
             private static final int DEFAULT_CACHE_MAX_SIZE = 16;

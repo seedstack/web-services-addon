@@ -25,7 +25,6 @@
     <wsp:Policy wsu:Id="CertificateClientPolicy">
         <wsp:ExactlyOne>
             <wsp:All>
-                <!-- Location of TrustStore and KeyStore.-->
                 <sc1:KeyStore wspp:visibility="private"
                               type="JKS"
                               location="client-store.jks"
