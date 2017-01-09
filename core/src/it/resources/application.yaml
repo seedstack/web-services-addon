@@ -16,8 +16,13 @@ security:
       roles: [ADD, MINUS]
 webServices:
   endpoints:
-    CalculatorWS:
-      implementation: org.seedstack.ws.fixtures.CalculatorServiceImpl
-      wsdl: META-INF/ws/Calculator.wsdl
-      url: http://localhost:${sys.seed\.ws\.port}/ws/calculator
+    CalculatorWS1:
+      implementation: org.seedstack.ws.fixtures.CalculatorCertificateImpl
+      wsdl: META-INF/ws/wsdl/Calculator.wsdl
+      url: http://localhost:${sys.seed\.ws\.port}/ws/calculator-certificate
+      enableMtom: true
+    CalculatorWS2:
+      implementation: org.seedstack.ws.fixtures.CalculatorUsernameTokenImpl
+      wsdl: META-INF/ws/wsdl/Calculator.wsdl
+      url: http://localhost:${sys.seed\.ws\.port}/ws/calculator-username-token
       enableMtom: true

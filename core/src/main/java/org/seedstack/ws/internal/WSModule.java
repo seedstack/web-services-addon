@@ -9,8 +9,8 @@ package org.seedstack.ws.internal;
 
 
 import com.google.inject.AbstractModule;
-import org.seedstack.ws.HttpBasicAuthenticationHandler;
 import com.sun.xml.wss.RealmAuthenticationAdapter;
+import org.seedstack.ws.HttpBasicAuthenticationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

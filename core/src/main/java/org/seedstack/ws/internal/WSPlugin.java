@@ -118,10 +118,6 @@ public class WSPlugin extends AbstractSeedPlugin implements SecurityProvider {
     public InitState initialize(InitContext initContext) {
         webServicesConfig = getConfiguration(WebServicesConfig.class);
 
-        if (webServicesConfig == null) {
-            throw SeedException.createNew(WSErrorCode.NO_WS_CONFIGURATION);
-        }
-
         for (String xsdResource : initContext.mapResourcesByRegex().get(XSD_REGEX)) {
             URL xsdResourceUrl = classLoader.getResource(xsdResource);
             if (xsdResourceUrl != null) {
@@ -160,7 +156,7 @@ public class WSPlugin extends AbstractSeedPlugin implements SecurityProvider {
 
     @Override
     public Object nativeUnitModule() {
-        return new WSModule(webServiceClasses, webServiceClientClasses, webServicesConfig.wss().getRealmAuthenticationAdapter());
+        return new WSModule(webServiceClasses, webServiceClientClasses, webServicesConfig.getRealmAuthenticationAdapter());
     }
 
     @Override

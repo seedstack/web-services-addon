@@ -11,8 +11,6 @@ import javax.xml.ws.WebServiceException;
 
 /**
  * Exception for all JMS transport errors.
- *
- * @author adrien.lauer@mpsa.com
  */
 public class JmsTransportException extends WebServiceException {
     /**

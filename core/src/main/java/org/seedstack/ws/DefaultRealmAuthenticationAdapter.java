@@ -10,6 +10,7 @@ package org.seedstack.ws;
 import com.sun.xml.wss.RealmAuthenticationAdapter;
 import com.sun.xml.wss.XWSSecurityException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.util.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +19,18 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.security.auth.Subject;
 
+/**
+ * This {@link RealmAuthenticationAdapter} implementation will authenticate the incoming request subject with Seed
+ * security (Shiro). This is the default.
+ */
 public class DefaultRealmAuthenticationAdapter extends RealmAuthenticationAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRealmAuthenticationAdapter.class);
+    private final org.apache.shiro.mgt.SecurityManager securityManager;
+
     @Inject
-    @Named("wsSecurityManager")
-    private static org.apache.shiro.mgt.SecurityManager securityManager;
+    public DefaultRealmAuthenticationAdapter(@Named("wsSecurityManager") SecurityManager securityManager) {
+        this.securityManager = securityManager;
+    }
 
     @Override
     public boolean authenticate(Subject callerSubject, String username, String password) throws XWSSecurityException {

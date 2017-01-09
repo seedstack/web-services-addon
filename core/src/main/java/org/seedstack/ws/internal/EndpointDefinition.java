@@ -15,8 +15,6 @@ import javax.xml.namespace.QName;
 
 /**
  * This class holds all information to create a Web Service endpoint.
- *
- * @author adrien.lauer@mpsa.com
  */
 public class EndpointDefinition {
     private final java.lang.Class<?> implementorClass;

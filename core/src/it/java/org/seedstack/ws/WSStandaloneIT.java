@@ -8,17 +8,18 @@
 package org.seedstack.ws;
 
 
-import com.sun.xml.ws.client.ClientTransportException;
 import com.sun.xml.ws.fault.ServerSOAPFaultException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.seedstack.seed.Configuration;
 import org.seedstack.seed.it.AbstractSeedIT;
+import org.seedstack.wsdl.seed.calculator.CalculatorPortType;
 import org.seedstack.wsdl.seed.calculator.CalculatorService;
-import org.seedstack.wsdl.seed.calculator.CalculatorWS;
 import org.seedstack.wsdl.seed.calculator.ImaginaryNumber;
+import org.seedstack.wsdl.seed.calculator.NumberFormat_Exception;
 
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.WebServiceException;
 
 import static org.junit.Assert.fail;
 
@@ -26,20 +27,20 @@ public class WSStandaloneIT extends AbstractSeedIT {
     @Configuration("sys.seed\\.ws\\.port")
     private int wsPort;
 
-    @Test(expected = ServerSOAPFaultException.class)
+    @Test(expected = WebServiceException.class)
     public void without_security() {
         CalculatorService calculatorService = new CalculatorService();
-        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapPort();
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator");
+        CalculatorPortType calculatorWS = calculatorService.getCalculatorUsernameTokenPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator-username-token");
         calculatorWS.add(1, 1);
         fail("should have failed since access is denied");
     }
 
     @Test
-    public void with_complex_types() {
+    public void with_complex_types() throws NumberFormat_Exception {
         CalculatorService calculatorService = new CalculatorService();
-        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapPort();
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator");
+        CalculatorPortType calculatorWS = calculatorService.getCalculatorUsernameTokenPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator-username-token");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "limited");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "good");
 
@@ -59,10 +60,20 @@ public class WSStandaloneIT extends AbstractSeedIT {
     @Test
     public void limited_valid_user_account_calling_allowed_method() {
         CalculatorService calculatorService = new CalculatorService();
-        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapPort();
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator");
+        CalculatorPortType calculatorWS = calculatorService.getCalculatorUsernameTokenPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator-username-token");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "limited");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "good");
+
+        int result = calculatorWS.add(1, 1);
+        Assertions.assertThat(result).isEqualTo(2);
+    }
+
+    @Test
+    public void test_with_certificate() {
+        CalculatorService calculatorService = new CalculatorService();
+        CalculatorPortType calculatorWS = calculatorService.getCalculatorCertificatePort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator-certificate");
 
         int result = calculatorWS.add(1, 1);
         Assertions.assertThat(result).isEqualTo(2);
@@ -71,8 +82,8 @@ public class WSStandaloneIT extends AbstractSeedIT {
     @Test(expected = ServerSOAPFaultException.class)
     public void limited_valid_user_account_calling_denied_method() {
         CalculatorService calculatorService = new CalculatorService();
-        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapPort();
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator");
+        CalculatorPortType calculatorWS = calculatorService.getCalculatorUsernameTokenPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator-username-token");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "limited");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "good");
 
@@ -83,8 +94,8 @@ public class WSStandaloneIT extends AbstractSeedIT {
     @Test
     public void full_valid_user_account_calling_all_methods() {
         CalculatorService calculatorService = new CalculatorService();
-        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapPort();
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator");
+        CalculatorPortType calculatorWS = calculatorService.getCalculatorUsernameTokenPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator-username-token");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "full");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "good");
 
@@ -95,36 +106,14 @@ public class WSStandaloneIT extends AbstractSeedIT {
         Assertions.assertThat(result2).isEqualTo(0);
     }
 
-    @Test(expected = ClientTransportException.class)
+    @Test(expected = ServerSOAPFaultException.class)
     public void invalid_user_account() {
         CalculatorService calculatorService = new CalculatorService();
-        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapPort();
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator");
+        CalculatorPortType calculatorWS = calculatorService.getCalculatorUsernameTokenPort();
+        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator-username-token");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "full");
         ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "bad");
 
         calculatorWS.add(1, 1);
-    }
-
-    @Test(expected = ClientTransportException.class)
-    public void should_launch_Exception() {
-        CalculatorService calculatorService = new CalculatorService();
-        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapPort();
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator");
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "full");
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "bad");
-
-        calculatorWS.add(1, 1);
-    }
-
-
-    public void testhandlerNopassword() {
-        CalculatorService calculatorService = new CalculatorService();
-        CalculatorWS calculatorWS = calculatorService.getCalculatorSoapPort();
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, "http://localhost:" + wsPort + "/ws/calculator");
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "full");
-        ((BindingProvider) calculatorWS).getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "good");
-
-
     }
 }

@@ -18,7 +18,8 @@ import java.util.Map;
 @Config("webServices")
 public class WebServicesConfig {
     private Map<String, EndpointConfig> endpoints = new HashMap<>();
-    private WSSConfig wss = new WSSConfig();
+    @NotNull
+    private Class<? extends RealmAuthenticationAdapter> realmAuthenticationAdapter = DefaultRealmAuthenticationAdapter.class;
 
     public Map<String, EndpointConfig> getEndpoints() {
         return Collections.unmodifiableMap(endpoints);
@@ -29,43 +30,13 @@ public class WebServicesConfig {
         return this;
     }
 
-    public WSSConfig wss() {
-        return wss;
+    public Class<? extends RealmAuthenticationAdapter> getRealmAuthenticationAdapter() {
+        return realmAuthenticationAdapter;
     }
 
-    @Config("wss")
-    public static class WSSConfig {
-        @NotNull
-        private Class<? extends RealmAuthenticationAdapter> realmAuthenticationAdapter = DefaultRealmAuthenticationAdapter.class;
-        private String user;
-        private String password;
-
-        public Class<? extends RealmAuthenticationAdapter> getRealmAuthenticationAdapter() {
-            return realmAuthenticationAdapter;
-        }
-
-        public WSSConfig setRealmAuthenticationAdapter(Class<? extends RealmAuthenticationAdapter> realmAuthenticationAdapter) {
-            this.realmAuthenticationAdapter = realmAuthenticationAdapter;
-            return this;
-        }
-
-        public String getUser() {
-            return user;
-        }
-
-        public WSSConfig setUser(String user) {
-            this.user = user;
-            return this;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public WSSConfig setPassword(String password) {
-            this.password = password;
-            return this;
-        }
+    public WebServicesConfig setRealmAuthenticationAdapter(Class<? extends RealmAuthenticationAdapter> realmAuthenticationAdapter) {
+        this.realmAuthenticationAdapter = realmAuthenticationAdapter;
+        return this;
     }
 
     public static class EndpointConfig {

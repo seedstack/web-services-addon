@@ -27,10 +27,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Authenticate client request basic auth with ldap server. Use only in a standalone runtime environment, since the basic
- * authentication should already be handled by the security Servlet filter in a Servlet environment.
- *
- * @author emmanuel.vinel@mpsa.com
+ * This handler can process HTTP basic authentication headers and authenticate the subject with Seed security (Shiro).
+ * Designed to be used in a standalone environment since you would prefer to handler basic authentication with a Web
+ * security filter in a Servlet environment.
  */
 public final class HttpBasicAuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpBasicAuthenticationHandler.class);

@@ -7,7 +7,5 @@
  */
 /**
  * Provides classes for exposing SOAP WEB services.
- *
- * @author Pierre Thirouin
  */
 package org.seedstack.ws;

@@ -15,8 +15,6 @@ import javax.inject.Inject;
 
 /**
  * Transport tube factory for JMS transport.
- *
- * @author adrien.lauer@mpsa.com
  */
 public class JmsTransportTubeFactory extends TransportTubeFactory {
     @Inject

@@ -15,8 +15,6 @@ import javax.xml.ws.WebServiceException;
 
 /**
  * Binding ID factory for JMS transport.
- *
- * @author adrien.lauer@mpsa.com
  */
 public class JmsBindingIDFactory extends BindingIDFactory {
     @Override

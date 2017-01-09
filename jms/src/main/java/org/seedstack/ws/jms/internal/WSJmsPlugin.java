@@ -43,8 +43,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This plugin provides JMS transport integration for WS support.
- *
- * @author adrien.lauer@mpsa.com
  */
 public class WSJmsPlugin extends AbstractSeedPlugin {
     private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of("http://www.w3.org/2010/soapjms/");

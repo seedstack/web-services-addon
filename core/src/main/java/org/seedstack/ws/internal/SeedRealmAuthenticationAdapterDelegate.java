@@ -17,8 +17,6 @@ import javax.security.auth.Subject;
 /**
  * This {@link com.sun.xml.wss.RealmAuthenticationAdapter} delegates to another {@link com.sun.xml.wss.RealmAuthenticationAdapter},
  * (configurable through org.seedstack.ws.realm-authentication-adapter property and made injectable).
- *
- * @author adrien.lauer@mpsa.com
  */
 public class SeedRealmAuthenticationAdapterDelegate extends RealmAuthenticationAdapter {
     @Inject

@@ -7,31 +7,27 @@
  */
 package org.seedstack.ws.fixtures;
 
-import org.seedstack.wsdl.seed.calculator.CalculatorWS;
-import org.seedstack.wsdl.seed.calculator.ImaginaryNumber;
 import org.seedstack.seed.security.RequiresRoles;
+import org.seedstack.wsdl.seed.calculator.CalculatorPortType;
+import org.seedstack.wsdl.seed.calculator.ImaginaryNumber;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
-import javax.jws.HandlerChain;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceContext;
 
 @WebService(
-        endpointInterface = "org.seedstack.wsdl.seed.calculator.CalculatorWS",
+        endpointInterface = "org.seedstack.wsdl.seed.calculator.CalculatorPortType",
         targetNamespace = "http://seedstack.org/wsdl/seed/calculator/",
         serviceName = "CalculatorService",
-        portName = "CalculatorSoapPort"
+        portName = "CalculatorUsernameTokenPort"
 )
-@HandlerChain(file = "handler-chain.xml")
-public class CalculatorServiceImpl implements CalculatorWS {
-
+public class CalculatorUsernameTokenImpl implements CalculatorPortType {
     @Inject
-    Calculator calculator;
-
+    private Calculator calculator;
     @Resource
-    WebServiceContext wsWebServiceContext;
+    private WebServiceContext wsWebServiceContext;
 
     @Override
     @RequiresRoles("ADD")

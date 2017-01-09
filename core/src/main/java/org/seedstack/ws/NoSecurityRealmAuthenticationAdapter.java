@@ -13,10 +13,8 @@ import com.sun.xml.wss.XWSSecurityException;
 import javax.security.auth.Subject;
 
 /**
- * This {@link com.sun.xml.wss.RealmAuthenticationAdapter} always validates authentication without any check, effectively
- * disabling security.
- *
- * @author adrien.lauer@mpsa.com
+ * This {@link com.sun.xml.wss.RealmAuthenticationAdapter} implementation always validates authentication without any check,
+ * effectively disabling security. Use with caution.
  */
 public class NoSecurityRealmAuthenticationAdapter extends RealmAuthenticationAdapter {
     @Override

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+-->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             targetNamespace="http://seedstack.org/wsdl/seed/calculator/"
+             xmlns:tns="http://seedstack.org/wsdl/seed/calculator/"
+             xmlns:wsp="http://www.w3.org/ns/ws-policy"
+             xmlns:sc1="http://schemas.sun.com/2006/03/wss/client"
+             xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy"
+             xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+    <portType name="CalculatorPortType"/>
+    <binding name="CalculatorCertificateBinding" type="tns:CalculatorPortType">
+        <wsp:PolicyReference URI="#CertificateClientPolicy"/>
+    </binding>
+    <service name="CalculatorService">
+        <port name="CalculatorCertificatePort" binding="tns:CalculatorCertificateBinding"/>
+    </service>
+    <wsp:Policy wsu:Id="CertificateClientPolicy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <!-- Location of TrustStore and KeyStore.-->
+                <sc1:KeyStore wspp:visibility="private"
+                              type="JKS"
+                              location="client-store.jks"
+                              storepass="cspass"
+                              alias="myclientkey"
+                              keypass="ckpass"/>
+                <sc1:TrustStore wspp:visibility="private"
+                                type="JKS"
+                                location="client-store.jks"
+                                peeralias="myservicekey"
+                                storepass="cspass"/>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
+</definitions>

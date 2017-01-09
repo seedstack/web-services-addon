@@ -34,8 +34,7 @@
                         <phase>generate-test-sources</phase>
                         <configuration>
                             <verbose>true</verbose>
-                            <wsdlDirectory>${basedir}/src/it/resources/META-INF/ws</wsdlDirectory>
-                            <wsdlLocation>META-INF/ws/Calculator.wsdl</wsdlLocation>
+                            <wsdlDirectory>${basedir}/src/it/resources/META-INF/ws/wsdl</wsdlDirectory>
                             <wsdlFiles>
                                 <wsdlFile>Calculator.wsdl</wsdlFile>
                             </wsdlFiles>

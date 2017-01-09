@@ -38,8 +38,6 @@ import java.util.Map;
 
 /**
  * This plugin enables Web integration of JAX-WS, disabling the standalone WS plugin in the process.
- *
- * @author emmanuel.vinel@mpsa.com
  */
 public class WSWebPlugin extends AbstractSeedPlugin implements WebProvider {
     private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAPBinding.SOAP11HTTP_BINDING, SOAPBinding.SOAP12HTTP_BINDING, SOAPBinding.SOAP11HTTP_MTOM_BINDING, SOAPBinding.SOAP12HTTP_MTOM_BINDING);
