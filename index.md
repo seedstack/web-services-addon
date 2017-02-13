@@ -1,12 +1,8 @@
 ---
-title: "Basics"
-name: "Web-Services"
+title: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
-date: 2016-03-09
-author: Emmanuel VINEL
+author: Adrien LAUER
 description: "Provides JAX-WS support through Metro."
-backend: true
-weight: -1
 tags:
     - "web-service"
     - "jax-ws"

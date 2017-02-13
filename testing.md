@@ -1,6 +1,7 @@
 ---
 title: "Testing"
-name: "Web-Services"
+parent: "Web-Services"
+weight: -1
 repo: "https://github.com/seedstack/web-services-addon"
 zones:
     - Addons
