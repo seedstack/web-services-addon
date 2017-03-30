@@ -4,11 +4,7 @@ parent: "Web-Services"
 weight: -1
 repo: "https://github.com/seedstack/web-services-addon"
 tags:
-    - "web-service"
-    - "jax-ws"
-    - "metro"
-    - "example"
-    - "wsdl"
+    - communication
 zones:
     - Addons
 menu:

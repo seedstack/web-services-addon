@@ -6,10 +6,8 @@ repo: "https://github.com/seedstack/web-services-addon"
 zones:
     - Addons
 tags:
-    - "web-service"
-    - "jax-ws"
-    - "metro"
-    - "testing"
+    - communication
+    - testing
 menu:
     AddonWebServices:
         weight: 60
