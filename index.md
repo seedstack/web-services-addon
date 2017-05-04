@@ -14,7 +14,6 @@ menu:
 ---
 
 SeedStack Web-Services add-on provides JAX-WS integration through the Metro reference implementation.<!--more-->
-<!--more-->
 
 # Dependencies
 
