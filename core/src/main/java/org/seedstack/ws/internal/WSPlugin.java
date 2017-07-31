@@ -9,7 +9,6 @@ package org.seedstack.ws.internal;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Module;
 import com.oracle.webservices.api.databinding.DatabindingModeFeature;
 import com.oracle.webservices.api.databinding.ExternalMetadataFeature;
 import com.sun.xml.ws.api.BindingID;
@@ -34,8 +33,6 @@ import io.nuun.kernel.api.plugin.request.ClasspathScanRequest;
 import org.kametic.specifications.Specification;
 import org.seedstack.seed.SeedException;
 import org.seedstack.seed.core.internal.AbstractSeedPlugin;
-import org.seedstack.seed.security.internal.SecurityGuiceConfigurer;
-import org.seedstack.seed.security.internal.SecurityProvider;
 import org.seedstack.shed.ClassLoaders;
 import org.seedstack.ws.WebServicesConfig;
 import org.slf4j.Logger;
@@ -64,7 +61,7 @@ import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING;
 /**
  * This plugin provides standalone JAX-WS integration.
  */
-public class WSPlugin extends AbstractSeedPlugin implements SecurityProvider {
+public class WSPlugin extends AbstractSeedPlugin {
     private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAP11HTTP_BINDING, SOAP12HTTP_BINDING, SOAP11HTTP_MTOM_BINDING, SOAP12HTTP_MTOM_BINDING);
     private static final Logger LOGGER = LoggerFactory.getLogger(WSPlugin.class);
     private static final String XSD_REGEX = ".*\\.xsd";
@@ -293,7 +290,7 @@ public class WSPlugin extends AbstractSeedPlugin implements SecurityProvider {
 
         // WSDL
         String wsdlPath = Optional.of(endpointConfiguration.getWsdl()).orElse(EndpointFactory.getWsdlLocation(implementationClass, metadataReader));
-        if (wsdlPath == null || wsdlPath.isEmpty()) {
+        if (wsdlPath.isEmpty()) {
             throw SeedException.createNew(WSErrorCode.WSDL_LOCATION_MISSING).put(ENDPOINT_NAME_ATTRIBUTE, endpoint).put(IMPLEMENTATION_CLASS_ATTRIBUTE, endpointConfiguration.getImplementation());
         }
 
@@ -387,17 +384,6 @@ public class WSPlugin extends AbstractSeedPlugin implements SecurityProvider {
             return HTTPBinding.HTTP_BINDING;
         }
         return lexical;
-    }
-
-
-    @Override
-    public Module provideMainSecurityModule(SecurityGuiceConfigurer securityGuiceConfigurer) {
-        return null;
-    }
-
-    @Override
-    public Module provideAdditionalSecurityModule() {
-        return new WSSecurityModule();
     }
 
     /**

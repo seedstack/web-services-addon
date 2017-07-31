@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.seedstack.poms</groupId>
         <artifactId>parent-internal</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </parent>
 
     <groupId>org.seedstack.addons.ws</groupId>
@@ -23,9 +23,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <poms.version>3.0.0</poms.version>
-        <seed.version>3.0.0</seed.version>
-        <jms-addon.version>3.0.0</jms-addon.version>
+        <poms.version>3.1.0</poms.version>
+        <seed.version>3.3.0-SNAPSHOT</seed.version>
+        <jms-addon.version>3.0.1</jms-addon.version>
         <metro.version>2.3.1</metro.version>
 
         <compatibility.skip>true</compatibility.skip>

@@ -1,3 +1,7 @@
+# Version 3.0.1 (2017-07-31)
+
+* [chg] Update to Seed 3.3.0.
+
 # Version 3.0.0 (2017-01-05)
 
 * [brk] Update to new configuration system.

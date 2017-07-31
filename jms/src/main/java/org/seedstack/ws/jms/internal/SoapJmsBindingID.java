@@ -95,10 +95,12 @@ final class SoapJmsBindingID {
         @Override
         public WebServiceFeatureList createBuiltinFeatureList() {
             WebServiceFeatureList r = super.createBuiltinFeatureList();
-            Boolean mtom = isMTOMEnabled();
+
+            String mtom = parameters.get(MTOM_PARAM);
             if (mtom != null) {
-                r.add(new MTOMFeature(mtom));
+                r.add(new MTOMFeature(Boolean.valueOf(mtom)));
             }
+
             return r;
         }
 
@@ -113,15 +115,6 @@ final class SoapJmsBindingID {
         @Override
         public SOAPJMSImpl clone() throws CloneNotSupportedException {
             return (SOAPJMSImpl) super.clone();
-        }
-
-        private Boolean isMTOMEnabled() {
-            String mtom = parameters.get(MTOM_PARAM);
-            if (mtom == null) {
-                return null;
-            } else {
-                return Boolean.valueOf(mtom);
-            }
         }
     }
 }

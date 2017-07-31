@@ -27,6 +27,7 @@ class WSJmsModule extends PrivateModule {
     @Override
     protected void configure() {
         install(new FactoryModuleBuilder().build(WSJmsTransportFactory.class));
+        expose(WSJmsTransportFactory.class);
 
         bind(new TypeLiteral<LoadingCache<SoapJmsUri, Connection>>() {
         }).toInstance(connectionCache);

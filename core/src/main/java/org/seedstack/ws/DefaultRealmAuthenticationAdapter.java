@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.security.auth.Subject;
 
 /**
@@ -28,7 +27,7 @@ public class DefaultRealmAuthenticationAdapter extends RealmAuthenticationAdapte
     private final org.apache.shiro.mgt.SecurityManager securityManager;
 
     @Inject
-    public DefaultRealmAuthenticationAdapter(@Named("wsSecurityManager") SecurityManager securityManager) {
+    public DefaultRealmAuthenticationAdapter(SecurityManager securityManager) {
         this.securityManager = securityManager;
     }
 

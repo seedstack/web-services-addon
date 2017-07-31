@@ -28,7 +28,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.NamingException;
 import javax.xml.ws.WebServiceException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
@@ -140,7 +142,7 @@ class JmsClientTransport {
                 producer.send(message);
                 requestMessageId = message.getJMSMessageID();
                 producer.close();
-            } catch (Exception e) {
+            } catch (NamingException | UnsupportedEncodingException | JMSException | MimeTypeParseException e) {
                 throw new JmsTransportException("Error sending JMS message", e);
             }
 

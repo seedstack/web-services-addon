@@ -14,8 +14,7 @@ security:
     full:
       password: good
       roles: [ADD, MINUS]
-web:
-  security:
+  web:
     urls:
       -
         pattern: '/ws/**'

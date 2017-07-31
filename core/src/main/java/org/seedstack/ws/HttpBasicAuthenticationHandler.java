@@ -35,7 +35,6 @@ public final class HttpBasicAuthenticationHandler implements SOAPHandler<SOAPMes
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpBasicAuthenticationHandler.class);
 
     @Inject
-    @Named("wsSecurityManager")
     private static org.apache.shiro.mgt.SecurityManager securityManager;
 
     @Override
