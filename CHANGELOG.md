@@ -1,4 +1,4 @@
-# Version 3.0.1 (2017-07-31)
+# Version 3.0.1 (2017-08-01)
 
 * [chg] Update to Seed 3.3.0.
 
