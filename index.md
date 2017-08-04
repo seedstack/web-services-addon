@@ -268,7 +268,7 @@ jms:jndi:dynamicQueues/TEST.QUEUE?jndiInitialContextFactory=org.apache.activemq.
   
 ## Queue lookup
 
-This variant allows to directly specify a queue name using a connection factory configured via the [SeedStack JMS add-on]({{<relref "addons/jms/index.md" >}}):
+This variant allows to directly specify a queue name using a connection factory configured via the [SeedStack JMS add-on]({{< ref "addons/jms/index.md" >}}):
 
 ```plain
 jms:queue:[QUEUE.NAME]?connectionFactoryName=[configuredConnectionFactory]&replyToName=[REPLY.QUEUE.NAME]
@@ -286,7 +286,7 @@ The `replyToName` can be omitted in which case the implementation will create a 
 
 ## Topic lookup
 
-This variant allows to directly specify a queue name using a connection factory configured via the [SeedStack JMS add-on]({{<relref "addons/jms/index.md" >}}):
+This variant allows to directly specify a queue name using a connection factory configured via the [SeedStack JMS add-on]({{< ref "addons/jms/index.md" >}}):
 
 ```plain
 jms:topic:TOPIC.NAME?connectionFactoryName=[configuredConnectionFactory]&replyToName=[REPLY.QUEUE.NAME]
