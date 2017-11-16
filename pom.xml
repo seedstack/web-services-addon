@@ -19,12 +19,12 @@
 
     <groupId>org.seedstack.addons.ws</groupId>
     <artifactId>web-services</artifactId>
-    <version>3.0.1-SNAPSHOT</version>
+    <version>3.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <poms.version>3.1.0</poms.version>
-        <seed.version>3.3.0</seed.version>
+        <seed.version>3.4.0-SNAPSHOT</seed.version>
         <jms-addon.version>3.0.1</jms-addon.version>
         <metro.version>2.3.1</metro.version>
 
