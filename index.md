@@ -1,5 +1,6 @@
 ---
 title: "Web-Services"
+addon: "Web-Services"
 repo: "https://github.com/seedstack/web-services-addon"
 author: Adrien LAUER
 description: "Provides JAX-WS support through Metro."
@@ -8,14 +9,12 @@ tags:
     - interfaces
 zones:
     - Addons
-menu:
-    AddonWebServices:
-        weight: 10
+noMenu: true    
 ---
 
 SeedStack Web-Services add-on provides JAX-WS integration through the Metro reference implementation.<!--more-->
 
-# Dependencies
+## Dependencies
 
 In a standalone environment (not a Web server), use the following dependency:
 
@@ -25,7 +24,7 @@ In a Web environment, use the following dependency instead:
 
 {{< dependency g="org.seedstack.addons.ws" a="web-services-web" >}}
 
-# WSDL and XSD files
+## WSDL and XSD files
 
 The WSDL and its optional XSD files must be placed under the `META-INF/ws` classpath directory to be properly detected
 by the Web-Services add-on. The WSDL below is used as a base for examples of this documentation. 
@@ -81,7 +80,7 @@ by the Web-Services add-on. The WSDL below is used as a base for examples of thi
 </wsdl:definitions>
 ```
 
-# WS-import Maven goal
+## WS-import Maven goal
  
 WS-import is a tool which generates JAX-WS classes from WSDL such as:
 
@@ -129,14 +128,14 @@ You have to generate those artifacts to be able to consume or publish a Web-Serv
 You can find more information about jaxws-maven-plugin [here](https://jax-ws-commons.java.net/jaxws-maven-plugin/wsimport-mojo.html).
 {{% /callout %}}
 
-# Consuming
+## Consuming
 
-## JAX-WS classes
+### JAX-WS classes
 
 To be able to consume a Web-Service, the JAX-WS artifacts must have been generated with the WS-Import Maven goal described
 [above](#ws-import-maven-goal). 
 
-## Client code
+### Client code
  
 You can find a typical JAX-WS client code below: 
 
@@ -163,14 +162,14 @@ public class SomeClass {
 You can find more advanced client JAX-WS examples in the [Web-Services sample](https://github.com/seedstack/web-services-sample).
 {{% /callout %}}
 
-# Publishing
+## Publishing
 
-## JAX-WS classes
+### JAX-WS classes
 
 To be able to publish a Web-Service, the JAX-WS artifacts must have been generated with the WS-Import Maven goal described
 [above](#ws-import-maven-goal). 
 
-## Implementation class
+### Implementation class
 
 An implementation of the generated Web-Service interface is required:
    
@@ -189,7 +188,7 @@ public class HelloServiceImpl implements HelloService {
 }
 ```
 
-## Configuration
+### Configuration
 
 To publish the Web-Service you must configure its endpoint:
 
@@ -228,7 +227,7 @@ hostname and the port are already determined by the environment.
 * In standalone mode, the full URL must be specified, such as `http://myserver.example.org:8080/ws/hello`.
 {{% /callout %}}
 
-# JMS transport
+## JMS transport
 
 This add-on provides an extension to use the JMS transport for Web-Services. To use it, add the following dependency:
 
@@ -237,7 +236,7 @@ This add-on provides an extension to use the JMS transport for Web-Services. To 
 To specify a JMS destination, you must use an URI that conforms to the [SOAP JMS specification](http://www.w3.org/TR/soapjms/)
 instead of an HTTP URL. There are three main variants of JMS URI.
   
-## JNDI lookup
+### JNDI lookup
   
 This variant allows to retrieve the connection factory and the destination from JNDI:
 
@@ -266,7 +265,7 @@ Example:
 jms:jndi:dynamicQueues/TEST.QUEUE?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory&jndiConnectionFactoryName=ConnectionFactory&jndiURL=vm://localhost?broker.persistent=false
 ```
   
-## Queue lookup
+### Queue lookup
 
 This variant allows to directly specify a queue name using a connection factory configured via the [SeedStack JMS add-on]({{< ref "addons/jms/index.md" >}}):
 
@@ -284,7 +283,7 @@ Where:
 The `replyToName` can be omitted in which case the implementation will create a temporary queue for the response. 
 {{% /callout %}}
 
-## Topic lookup
+### Topic lookup
 
 This variant allows to directly specify a queue name using a connection factory configured via the [SeedStack JMS add-on]({{< ref "addons/jms/index.md" >}}):
 
