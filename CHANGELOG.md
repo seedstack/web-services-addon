@@ -1,6 +1,7 @@
-# Version 3.0.2 (2017-11-31)
+# Version 3.0.2 (2017-11-29)
 
 * [chg] Update to Seed 3.4.0.
+* [chg] Update metro to 2.4.0.
 
 # Version 3.0.1 (2017-08-01)
 
