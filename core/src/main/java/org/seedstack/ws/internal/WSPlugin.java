@@ -5,7 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+
 package org.seedstack.ws.internal;
+
+import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_BINDING;
+import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_MTOM_BINDING;
+import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING;
+import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -28,21 +34,7 @@ import com.sun.xml.ws.util.xml.XmlUtil;
 import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.context.Context;
 import io.nuun.kernel.api.plugin.context.InitContext;
-import io.nuun.kernel.api.plugin.request.BindingRequest;
 import io.nuun.kernel.api.plugin.request.ClasspathScanRequest;
-import org.kametic.specifications.Specification;
-import org.seedstack.seed.SeedException;
-import org.seedstack.seed.core.internal.AbstractSeedPlugin;
-import org.seedstack.shed.ClassLoaders;
-import org.seedstack.ws.WebServicesConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.EntityResolver;
-
-import javax.jws.WebService;
-import javax.xml.namespace.QName;
-import javax.xml.ws.http.HTTPBinding;
-import javax.xml.ws.soap.MTOMFeature;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -52,17 +44,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_BINDING;
-import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_MTOM_BINDING;
-import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING;
-import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING;
+import javax.jws.WebService;
+import javax.xml.namespace.QName;
+import javax.xml.ws.http.HTTPBinding;
+import javax.xml.ws.soap.MTOMFeature;
+import org.kametic.specifications.Specification;
+import org.seedstack.seed.SeedException;
+import org.seedstack.seed.core.internal.AbstractSeedPlugin;
+import org.seedstack.shed.ClassLoaders;
+import org.seedstack.ws.WebServicesConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.EntityResolver;
 
 /**
  * This plugin provides standalone JAX-WS integration.
  */
 public class WSPlugin extends AbstractSeedPlugin {
-    private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(SOAP11HTTP_BINDING, SOAP12HTTP_BINDING, SOAP11HTTP_MTOM_BINDING, SOAP12HTTP_MTOM_BINDING);
+    private static final List<String> SUPPORTED_BINDINGS = ImmutableList.of(
+            SOAP11HTTP_BINDING,
+            SOAP12HTTP_BINDING,
+            SOAP11HTTP_MTOM_BINDING,
+            SOAP12HTTP_MTOM_BINDING);
     private static final Logger LOGGER = LoggerFactory.getLogger(WSPlugin.class);
     private static final String XSD_REGEX = ".*\\.xsd";
     private static final String WSDL_REGEX = ".*\\.wsdl";
@@ -73,6 +76,7 @@ public class WSPlugin extends AbstractSeedPlugin {
     private final ClassLoader classLoader = ClassLoaders.findMostCompleteClassLoader(WSPlugin.class);
     private final Set<Class<?>> webServiceClasses = new HashSet<>();
     private final Set<Class<?>> webServiceClientClasses = new HashSet<>();
+    private final Set<Class<?>> handlerClasses = new HashSet<>();
 
     private final Map<String, SDDocumentSource> docs = new HashMap<>();
     private final Map<String, EndpointDefinition> endpointDefinitions = new HashMap<>();
@@ -98,15 +102,9 @@ public class WSPlugin extends AbstractSeedPlugin {
         return classpathScanRequestBuilder()
                 .specification(WSSpecifications.WEB_SERVICE_SPEC)
                 .specification(WSSpecifications.WEB_SERVICE_CLIENT_SPEC)
+                .specification(WSSpecifications.HANDLER_SPEC)
                 .resourcesRegex(XSD_REGEX)
                 .resourcesRegex(WSDL_REGEX)
-                .build();
-    }
-
-    @Override
-    public Collection<BindingRequest> bindingRequests() {
-        return bindingRequestsBuilder()
-                .specification(WSSpecifications.HANDLER_SPEC)
                 .build();
     }
 
@@ -131,51 +129,64 @@ public class WSPlugin extends AbstractSeedPlugin {
 
         resourceLoader = new SeedResourceLoader(classLoader, docs.keySet());
 
-        Map<Specification, Collection<Class<?>>> scannedTypesBySpecification = initContext.scannedTypesBySpecification();
+        Map<Specification, Collection<Class<?>>> scannedTypesBySpecification =
+                initContext.scannedTypesBySpecification();
 
-        Collection<Class<?>> webServiceClientAnnotatedClassCandidates = scannedTypesBySpecification.get(WSSpecifications.WEB_SERVICE_CLIENT_SPEC);
-        for (Class<?> webServiceClientAnnotatedClassCandidate : webServiceClientAnnotatedClassCandidates) {
-            webServiceClientClasses.add(webServiceClientAnnotatedClassCandidate);
-        }
+        Collection<Class<?>> webServiceClientAnnotatedClassCandidates =
+                scannedTypesBySpecification.get(WSSpecifications.WEB_SERVICE_CLIENT_SPEC);
+        webServiceClientClasses.addAll(webServiceClientAnnotatedClassCandidates);
 
-        Collection<Class<?>> webServiceAnnotatedClassCandidates = scannedTypesBySpecification.get(WSSpecifications.WEB_SERVICE_SPEC);
-        for (Class webServiceAnnotatedClassCandidate : webServiceAnnotatedClassCandidates) {
-            webServiceClasses.add(webServiceAnnotatedClassCandidate);
-        }
+        Collection<Class<?>> webServiceAnnotatedClassCandidates =
+                scannedTypesBySpecification.get(WSSpecifications.WEB_SERVICE_SPEC);
+        webServiceClasses.addAll(webServiceAnnotatedClassCandidates);
+
+        Collection<Class<?>> handlerClassCandidates =
+                scannedTypesBySpecification.get(WSSpecifications.HANDLER_SPEC);
+        handlerClasses.addAll(webServiceAnnotatedClassCandidates);
 
         if (webServicesConfig.getEndpoints().isEmpty()) {
             LOGGER.info("No WS endpoint declared");
         }
-        webServicesConfig.getEndpoints().forEach((key, value) -> endpointDefinitions.put(key, createEndpointDefinition(key, value)));
+        webServicesConfig.getEndpoints()
+                .forEach((key, value) -> endpointDefinitions.put(key, createEndpointDefinition(key, value)));
 
         return InitState.INITIALIZED;
     }
 
     @Override
     public Object nativeUnitModule() {
-        return new WSModule(webServiceClasses, webServiceClientClasses, webServicesConfig.getRealmAuthenticationAdapter());
+        return new WSModule(webServiceClasses,
+                webServiceClientClasses,
+                handlerClasses,
+                webServicesConfig.getRealmAuthenticationAdapter());
     }
 
     @Override
     public void start(Context context) {
-        for (Map.Entry<String, EndpointDefinition> wsEndpointEntry : getEndpointDefinitions(SUPPORTED_BINDINGS).entrySet()) {
+        for (Map.Entry<String, EndpointDefinition> wsEndpointEntry :
+                getEndpointDefinitions(SUPPORTED_BINDINGS).entrySet()) {
             String endpointName = wsEndpointEntry.getKey();
 
             if (!disableEndpointPublishing) {
                 String urlString = wsEndpointEntry.getValue().getUrl();
                 if (urlString == null || urlString.isEmpty()) {
-                    throw SeedException.createNew(WSErrorCode.ENDPOINT_URL_MISSING).put(ENDPOINT_NAME_ATTRIBUTE, endpointName);
+                    throw SeedException.createNew(WSErrorCode.ENDPOINT_URL_MISSING)
+                            .put(ENDPOINT_NAME_ATTRIBUTE, endpointName);
                 }
 
                 URL url;
                 try {
                     url = new URL(urlString);
                 } catch (MalformedURLException e) {
-                    throw SeedException.wrap(e, WSErrorCode.MALFORMED_ENDPOINT_URL).put(ENDPOINT_NAME_ATTRIBUTE, endpointName);
+                    throw SeedException.wrap(e, WSErrorCode.MALFORMED_ENDPOINT_URL)
+                            .put(ENDPOINT_NAME_ATTRIBUTE, endpointName);
                 }
 
                 LOGGER.info("Publishing WS endpoint {} on {}", endpointName, url);
-                HttpEndpoint httpEndpoint = new HttpEndpoint(null, serverAdapters.createAdapter(endpointName, url.getPath(), createWSEndpoint(wsEndpointEntry.getValue(), null)));
+                HttpEndpoint httpEndpoint = new HttpEndpoint(null,
+                        serverAdapters.createAdapter(endpointName,
+                                url.getPath(),
+                                createWSEndpoint(wsEndpointEntry.getValue(), null)));
                 httpEndpoints.put(endpointName, httpEndpoint);
                 httpEndpoint.publish(url.toExternalForm());
             }
@@ -231,7 +242,8 @@ public class WSPlugin extends AbstractSeedPlugin {
         );
     }
 
-    private EndpointDefinition createEndpointDefinition(String endpoint, WebServicesConfig.EndpointConfig endpointConfiguration) {
+    private EndpointDefinition createEndpointDefinition(String endpoint,
+            WebServicesConfig.EndpointConfig endpointConfiguration) {
         // External metadata
         MetadataReader metadataReader = null;
         String externalMetadata = endpointConfiguration.getExternalMetadata();
@@ -241,7 +253,8 @@ public class WSPlugin extends AbstractSeedPlugin {
                     .builder()
                     .addResources(externalMetadata)
                     .build()
-                    .getMetadataReader(ClassLoaders.findMostCompleteClassLoader(endpointConfiguration.getImplementation()), false);
+                    .getMetadataReader(ClassLoaders.findMostCompleteClassLoader(endpointConfiguration.getImplementation()),
+                            false);
         }
 
         EndpointFactory.verifyImplementorClass(endpointConfiguration.getImplementation(), metadataReader);
@@ -254,7 +267,8 @@ public class WSPlugin extends AbstractSeedPlugin {
             if (annotation != null && !annotation.targetNamespace().isEmpty() && !annotation.serviceName().isEmpty()) {
                 serviceQName = new QName(annotation.targetNamespace(), annotation.serviceName());
             } else {
-                serviceQName = EndpointFactory.getDefaultServiceName(endpointConfiguration.getImplementation(), metadataReader);
+                serviceQName = EndpointFactory.getDefaultServiceName(endpointConfiguration.getImplementation(),
+                        metadataReader);
             }
         } else {
             serviceQName = QName.valueOf(serviceName);
@@ -289,20 +303,27 @@ public class WSPlugin extends AbstractSeedPlugin {
         );
 
         // WSDL
-        String wsdlPath = Optional.of(endpointConfiguration.getWsdl()).orElse(EndpointFactory.getWsdlLocation(implementationClass, metadataReader));
+        String wsdlPath = Optional.of(endpointConfiguration.getWsdl())
+                .orElse(EndpointFactory.getWsdlLocation(implementationClass, metadataReader));
         if (wsdlPath.isEmpty()) {
-            throw SeedException.createNew(WSErrorCode.WSDL_LOCATION_MISSING).put(ENDPOINT_NAME_ATTRIBUTE, endpoint).put(IMPLEMENTATION_CLASS_ATTRIBUTE, endpointConfiguration.getImplementation());
+            throw SeedException.createNew(WSErrorCode.WSDL_LOCATION_MISSING)
+                    .put(ENDPOINT_NAME_ATTRIBUTE, endpoint)
+                    .put(IMPLEMENTATION_CLASS_ATTRIBUTE, endpointConfiguration.getImplementation());
         }
 
         URL wsdlURL;
         try {
             wsdlURL = resourceLoader.getResource(wsdlPath);
         } catch (MalformedURLException e) {
-            throw SeedException.wrap(e, WSErrorCode.UNABLE_TO_FIND_WSDL).put(ENDPOINT_NAME_ATTRIBUTE, endpoint).put(WSDL_LOCATION_ATTRIBUTE, wsdlPath);
+            throw SeedException.wrap(e, WSErrorCode.UNABLE_TO_FIND_WSDL)
+                    .put(ENDPOINT_NAME_ATTRIBUTE, endpoint)
+                    .put(WSDL_LOCATION_ATTRIBUTE, wsdlPath);
         }
 
         if (wsdlURL == null) {
-            throw SeedException.createNew(WSErrorCode.UNABLE_TO_FIND_WSDL).put(ENDPOINT_NAME_ATTRIBUTE, endpoint).put(WSDL_LOCATION_ATTRIBUTE, wsdlPath);
+            throw SeedException.createNew(WSErrorCode.UNABLE_TO_FIND_WSDL)
+                    .put(ENDPOINT_NAME_ATTRIBUTE, endpoint)
+                    .put(WSDL_LOCATION_ATTRIBUTE, wsdlPath);
         }
 
         SDDocumentSource primaryWSDL = docs.get(wsdlURL.toExternalForm());
@@ -330,7 +351,8 @@ public class WSPlugin extends AbstractSeedPlugin {
         );
     }
 
-    private WSBinding createBinding(String ddBindingId, Class implClass, Boolean mtomEnabled, Integer mtomThreshold, String dataBindingMode) {
+    private WSBinding createBinding(String ddBindingId, Class implClass, Boolean mtomEnabled, Integer mtomThreshold,
+            String dataBindingMode) {
         WebServiceFeatureList features;
 
         MTOMFeature mtomfeature = null;
