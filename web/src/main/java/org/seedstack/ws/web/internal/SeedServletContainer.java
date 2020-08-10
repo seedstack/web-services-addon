@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,20 +30,7 @@ class SeedServletContainer extends Container {
 
     private final ServletContext servletContext;
 
-    private final ServletModule module = new ServletModule() {
-        private final List<BoundEndpoint> endpoints = new ArrayList<>();
-
-        @Override
-        public List<BoundEndpoint> getBoundEndpoints() {
-            return endpoints;
-        }
-
-        @Override
-        public String getContextPath() {
-            // Cannot compute this since we don't know about hostname and port etc
-            throw new WebServiceException("Container " + SeedServletContainer.class.getName() + " doesn't support getContextPath()");
-        }
-    };
+    private final ServletModule module = new SeedServletModule();
 
     private final ResourceLoader loader = new ResourceLoader() {
         @Override
@@ -120,6 +107,21 @@ class SeedServletContainer extends Container {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             return method.invoke(servletContext, args);
+        }
+    }
+
+    private static class SeedServletModule extends ServletModule {
+        private final List<BoundEndpoint> endpoints = new ArrayList<>();
+
+        @Override
+        public List<BoundEndpoint> getBoundEndpoints() {
+            return endpoints;
+        }
+
+        @Override
+        public String getContextPath() {
+            // Cannot compute this since we don't know about hostname and port etc
+            throw new WebServiceException("Container " + SeedServletContainer.class.getName() + " doesn't support getContextPath()");
         }
     }
 }

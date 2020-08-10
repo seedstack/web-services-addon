@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,10 +7,12 @@
  */
 package org.seedstack.ws;
 
-import org.seedstack.seed.it.AbstractSeedIT;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.seedstack.seed.testing.junit4.SeedITRunner;
 
-public class WSWebWithoutContainerIT extends AbstractSeedIT {
+@RunWith(SeedITRunner.class)
+public class WSWebWithoutContainerIT {
     @Test
     public void web_services_dont_prevent_startup_outside_web_environment() {
     }

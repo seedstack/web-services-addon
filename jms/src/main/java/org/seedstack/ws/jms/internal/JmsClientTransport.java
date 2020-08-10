@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@ package org.seedstack.ws.jms.internal;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.assistedinject.Assisted;
 import com.sun.xml.ws.api.message.Packet;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.seedstack.seed.Application;
 import org.seedstack.ws.jms.WebServicesJmsConfig;
 import org.slf4j.Logger;
@@ -57,6 +58,7 @@ class JmsClientTransport {
         this.connectionCache = connectionCache;
     }
 
+    @SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS", justification = "Empty byte array is distinct from null here")
     byte[] sendMessage(byte[] sndPacket) {
         Session session = null;
         MessageConsumer messageConsumer = null;
@@ -162,7 +164,7 @@ class JmsClientTransport {
                     } else {
                         throw new JmsTransportException("No suitable reply received");
                     }
-                } catch (Exception e) {
+                } catch (RuntimeException | JMSException | MimeTypeParseException | UnsupportedEncodingException e) {
                     throw new JmsTransportException("Error receiving JMS message", e);
                 }
             }

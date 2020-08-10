@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,11 +12,12 @@ import com.sun.xml.ws.fault.ServerSOAPFaultException;
 import org.assertj.core.api.Assertions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.seedstack.seed.it.AbstractSeedWebIT;
+import org.junit.runner.RunWith;
 import org.seedstack.wsdl.seed.calculator.CalculatorService;
 import org.seedstack.wsdl.seed.calculator.CalculatorWS;
 
@@ -25,8 +26,8 @@ import java.net.URL;
 
 import static org.junit.Assert.fail;
 
-
-public class WSWebIT extends AbstractSeedWebIT {
+@RunWith(Arquillian.class)
+public class WSWebIT  {
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class);

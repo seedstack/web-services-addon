@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 package org.seedstack.ws.jms.internal;
 
 import com.google.inject.MembersInjector;
+import org.graalvm.compiler.options.SuppressFBWarnings;
 import org.seedstack.seed.SeedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ class WSJmsMessageListener implements MessageListener {
     }
 
     @Inject
+    @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD", justification = "Called by Guice on injection")
     private void injectAdapter(MembersInjector<JmsAdapter> jmsAdapterMembersInjector) {
         jmsAdapterMembersInjector.injectMembers(this.adapter);
     }

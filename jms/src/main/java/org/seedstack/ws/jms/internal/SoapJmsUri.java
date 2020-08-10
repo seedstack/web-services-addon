@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,7 +7,7 @@
  */
 package org.seedstack.ws.jms.internal;
 
-import org.apache.commons.lang.StringUtils;
+import com.google.common.base.Strings;
 import org.seedstack.ws.jms.WebServicesJmsConfig;
 
 import javax.jms.Destination;
@@ -126,12 +126,12 @@ final class SoapJmsUri {
         Properties properties = new Properties();
 
         String jndiInitialContextFactory = soapJmsUri.getParameter("jndiInitialContextFactory");
-        if (!StringUtils.isEmpty(jndiInitialContextFactory)) {
+        if (!Strings.isNullOrEmpty(jndiInitialContextFactory)) {
             properties.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY, jndiInitialContextFactory);
         }
 
         String jndiURL = soapJmsUri.getParameter("jndiURL");
-        if (!StringUtils.isEmpty(jndiURL)) {
+        if (!Strings.isNullOrEmpty(jndiURL)) {
             properties.setProperty(javax.naming.Context.PROVIDER_URL, jndiURL);
         }
 

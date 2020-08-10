@@ -1,3 +1,7 @@
+# Version 3.0.4 (2020-08-10)
+
+* [chg] Update metro to 2.4.4.
+
 # Version 3.0.3 (2018-08-29)
 
 * [fix] Fix for `NoClassDefFoundError: javax/annotation/Nullable` that can happen with recent versions of SeedStack.

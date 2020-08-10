@@ -1,17 +1,11 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-
 package org.seedstack.ws.internal;
-
-import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_BINDING;
-import static javax.xml.ws.soap.SOAPBinding.SOAP11HTTP_MTOM_BINDING;
-import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING;
-import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -35,20 +29,6 @@ import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.context.Context;
 import io.nuun.kernel.api.plugin.context.InitContext;
 import io.nuun.kernel.api.plugin.request.ClasspathScanRequest;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import javax.jws.WebService;
-import javax.xml.namespace.QName;
-import javax.xml.ws.http.HTTPBinding;
-import javax.xml.ws.soap.MTOMFeature;
-import org.kametic.specifications.Specification;
 import org.seedstack.seed.SeedException;
 import org.seedstack.seed.core.internal.AbstractSeedPlugin;
 import org.seedstack.shed.ClassLoaders;
@@ -56,6 +36,17 @@ import org.seedstack.ws.WebServicesConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.EntityResolver;
+
+import javax.jws.WebService;
+import javax.xml.namespace.QName;
+import javax.xml.ws.http.HTTPBinding;
+import javax.xml.ws.soap.MTOMFeature;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.function.Predicate;
+
+import static javax.xml.ws.soap.SOAPBinding.*;
 
 /**
  * This plugin provides standalone JAX-WS integration.
@@ -100,16 +91,15 @@ public class WSPlugin extends AbstractSeedPlugin {
     @Override
     public Collection<ClasspathScanRequest> classpathScanRequests() {
         return classpathScanRequestBuilder()
-                .specification(WSSpecifications.WEB_SERVICE_SPEC)
-                .specification(WSSpecifications.WEB_SERVICE_CLIENT_SPEC)
-                .specification(WSSpecifications.HANDLER_SPEC)
+                .predicate(WSPredicates.WEB_SERVICE_SPEC)
+                .predicate(WSPredicates.WEB_SERVICE_CLIENT_SPEC)
+                .predicate(WSPredicates.HANDLER_SPEC)
                 .resourcesRegex(XSD_REGEX)
                 .resourcesRegex(WSDL_REGEX)
                 .build();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public InitState initialize(InitContext initContext) {
         webServicesConfig = getConfiguration(WebServicesConfig.class);
 
@@ -129,20 +119,20 @@ public class WSPlugin extends AbstractSeedPlugin {
 
         resourceLoader = new SeedResourceLoader(classLoader, docs.keySet());
 
-        Map<Specification, Collection<Class<?>>> scannedTypesBySpecification =
-                initContext.scannedTypesBySpecification();
+        Map<Predicate<Class<?>>, Collection<Class<?>>> scannedTypesByPredicate =
+                initContext.scannedTypesByPredicate();
 
         Collection<Class<?>> webServiceClientAnnotatedClassCandidates =
-                scannedTypesBySpecification.get(WSSpecifications.WEB_SERVICE_CLIENT_SPEC);
+                scannedTypesByPredicate.get(WSPredicates.WEB_SERVICE_CLIENT_SPEC);
         webServiceClientClasses.addAll(webServiceClientAnnotatedClassCandidates);
 
         Collection<Class<?>> webServiceAnnotatedClassCandidates =
-                scannedTypesBySpecification.get(WSSpecifications.WEB_SERVICE_SPEC);
+                scannedTypesByPredicate.get(WSPredicates.WEB_SERVICE_SPEC);
         webServiceClasses.addAll(webServiceAnnotatedClassCandidates);
 
         Collection<Class<?>> handlerClassCandidates =
-                scannedTypesBySpecification.get(WSSpecifications.HANDLER_SPEC);
-        handlerClasses.addAll(webServiceAnnotatedClassCandidates);
+                scannedTypesByPredicate.get(WSPredicates.HANDLER_SPEC);
+        handlerClasses.addAll(handlerClassCandidates);
 
         if (webServicesConfig.getEndpoints().isEmpty()) {
             LOGGER.info("No WS endpoint declared");
@@ -351,7 +341,7 @@ public class WSPlugin extends AbstractSeedPlugin {
         );
     }
 
-    private WSBinding createBinding(String ddBindingId, Class implClass, Boolean mtomEnabled, Integer mtomThreshold,
+    private WSBinding createBinding(String ddBindingId, Class<?> implClass, Boolean mtomEnabled, Integer mtomThreshold,
             String dataBindingMode) {
         WebServiceFeatureList features;
 

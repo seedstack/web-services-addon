@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,13 +29,15 @@ class WSJmsModule extends PrivateModule {
         install(new FactoryModuleBuilder().build(WSJmsTransportFactory.class));
         expose(WSJmsTransportFactory.class);
 
-        bind(new TypeLiteral<LoadingCache<SoapJmsUri, Connection>>() {
-        }).toInstance(connectionCache);
+        bind(new LoadingCacheTypeLiteral()).toInstance(connectionCache);
 
         for (WSJmsMessageListener wsJmsMessageListener : wsJmsMessageListeners) {
             requestInjection(wsJmsMessageListener);
         }
 
         requestStaticInjection(JmsTransportTubeFactory.class);
+    }
+
+    private static class LoadingCacheTypeLiteral extends TypeLiteral<LoadingCache<SoapJmsUri, Connection>> {
     }
 }

@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+    Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
 
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,19 +14,20 @@
     <parent>
         <groupId>org.seedstack.poms</groupId>
         <artifactId>parent-internal</artifactId>
-        <version>3.1.0</version>
+        <version>3.4.9</version>
     </parent>
 
     <groupId>org.seedstack.addons.ws</groupId>
     <artifactId>web-services</artifactId>
-    <version>3.0.3-SNAPSHOT</version>
+    <version>3.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <poms.version>3.1.0</poms.version>
-        <seed.version>3.4.0</seed.version>
+        <seed.version>3.10.0</seed.version>
         <jms-addon.version>3.0.1</jms-addon.version>
-        <metro.version>2.4.1</metro.version>
+        <metro.version>2.4.4</metro.version>
+        <arquillian.version>1.4.0.Final</arquillian.version>
+        <tomcat.version>7.0.86</tomcat.version>
 
         <compatibility.version>3.0.0</compatibility.version>
 
@@ -65,12 +66,15 @@
                             <licenseMerge>Apache 2|Apache License 2.0</licenseMerge>
                             <licenseMerge>Apache 2|Apache License, version 2.0</licenseMerge>
                             <licenseMerge>Apache 2|Apache License Version 2.0</licenseMerge>
+                            <licenseMerge>Apache 2|Apache 2.0</licenseMerge>
                             <licenseMerge>BSD|The New BSD License</licenseMerge>
                             <licenseMerge>CDDL|CDDL + GPLv2 with classpath exception</licenseMerge>
                             <licenseMerge>CDDL|CDDL+GPL License</licenseMerge>
                             <licenseMerge>LGPL 3.0|GNU Lesser Public License</licenseMerge>
+                            <licenseMerge>MIT License|The MIT License</licenseMerge>
                             <licenseMerge>IGNORED_LICENSE|MPL 1.1</licenseMerge>
                             <licenseMerge>IGNORED_LICENSE|LGPL 2.1</licenseMerge>
+                            <licenseMerge>IGNORED_LICENSE|Eclipse Distribution License - v 1.0</licenseMerge>
                         </licenseMerges>
                     </configuration>
                 </plugin>

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2013-2016, The SeedStack authors <http://seedstack.org>
+/*
+ * Copyright © 2013-2020, The SeedStack authors <http://seedstack.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 package org.seedstack.ws.jms.internal;
 
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -15,7 +16,6 @@ import com.google.common.collect.Lists;
 import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.PluginException;
 import io.nuun.kernel.api.plugin.context.InitContext;
-import org.apache.commons.lang.StringUtils;
 import org.seedstack.jms.internal.JmsPlugin;
 import org.seedstack.jms.spi.ConnectionDefinition;
 import org.seedstack.jms.spi.JmsFactory;
@@ -85,7 +85,7 @@ public class WSJmsPlugin extends AbstractSeedPlugin {
 
                         if (SoapJmsUri.JNDI_LOOKUP_VARIANT.equals(lookupVariant)) {
                             String jndiConnectionFactoryName = soapJmsUri.getParameter("jndiConnectionFactoryName");
-                            if (StringUtils.isBlank(jndiConnectionFactoryName)) {
+                            if (Strings.isNullOrEmpty(jndiConnectionFactoryName)) {
                                 throw new IllegalArgumentException("Missing jndiConnectionFactoryName parameter for JMS URI " + soapJmsUri.toString());
                             }
 
@@ -105,7 +105,7 @@ public class WSJmsPlugin extends AbstractSeedPlugin {
                         } else if (SoapJmsUri.SEED_QUEUE_LOOKUP_VARIANT.equals(lookupVariant) || SoapJmsUri.SEED_TOPIC_LOOKUP_VARIANT.equals(lookupVariant)) {
                             String connectionName = soapJmsUri.getConnectionName();
 
-                            if (StringUtils.isBlank(connectionName)) {
+                            if (Strings.isNullOrEmpty(connectionName)) {
                                 throw new IllegalArgumentException("Missing connectionName parameter for JMS URI " + soapJmsUri.toString());
                             }
 
