@@ -8,7 +8,7 @@
 package org.seedstack.ws.jms.internal;
 
 import com.google.inject.MembersInjector;
-import org.graalvm.compiler.options.SuppressFBWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.seedstack.seed.SeedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
