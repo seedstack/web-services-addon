@@ -24,7 +24,7 @@
 
     <properties>
         <seed.version>3.10.0</seed.version>
-        <jms-addon.version>3.0.1</jms-addon.version>
+        <jms-addon.version>3.1.1</jms-addon.version>
         <metro.version>2.4.4</metro.version>
         <arquillian.version>1.4.0.Final</arquillian.version>
         <tomcat.version>7.0.86</tomcat.version>

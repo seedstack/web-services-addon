@@ -6,6 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
+wsPort: 49155 # TODO: switch to $availableTcpPort('ws') after seed 3.11+
 security:
   users:
     limited:
@@ -28,7 +29,7 @@ webServices:
     CalculatorWS0:
       implementation: org.seedstack.ws.fixtures.CalculatorServiceImpl
       wsdl: META-INF/ws/Calculator.wsdl
-      url: http://localhost:${sys.seed\.ws\.port}/ws/calculator
+      url: http://localhost:${wsPort}/ws/calculator
       enableMtom: true
     CalculatorWS1:
       implementation: org.seedstack.ws.fixtures.CalculatorServiceImpl

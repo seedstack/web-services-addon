@@ -11,7 +11,7 @@ package org.seedstack.ws;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.seedstack.seed.Configuration;
-import org.seedstack.seed.it.SeedITRunner;
+import org.seedstack.seed.testing.junit4.SeedITRunner;
 import org.seedstack.ws.jms.internal.JmsConstants;
 import org.seedstack.ws.jms.internal.JmsTransportException;
 import org.seedstack.wsdl.seed.calculator.CalculatorService;
@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(SeedITRunner.class)
 public class WSJmsIT {
-    @Configuration("sys.seed\\.ws\\.port")
+    @Configuration("wsPort")
     private int wsPort;
 
     @Test

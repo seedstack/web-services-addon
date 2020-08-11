@@ -26,7 +26,7 @@ import static org.junit.Assert.fail;
 
 @RunWith(SeedITRunner.class)
 public class WSStandaloneIT {
-    @Configuration("sys.seed\\.ws\\.port")
+    @Configuration("wsPort")
     private int wsPort;
 
     @Test(expected = WebServiceException.class)
